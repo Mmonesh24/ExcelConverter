@@ -1,0 +1,3070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StrikeFlow — Options Excel Converter & Formatter</title>
+    <!-- Modern Human-Designed Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <!-- Styled Excel Engine (supports colors, fills, fonts & formulas) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script>
+        if (typeof XLSX === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');
+        }
+    </script>
+
+    <style>
+        :root {
+            /* Vibrant Purple & Lavender Palette */
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --primary-light: #f5f3ff;
+            --primary-glow: rgba(124, 58, 237, 0.35);
+            --violet-50: #f5f3ff;
+            --violet-100: #ede9fe;
+            --violet-200: #ddd6fe;
+            --violet-300: #c4b5fd;
+            --violet-400: #a78bfa;
+            --violet-500: #8b5cf6;
+            --violet-600: #7c3aed;
+            --violet-700: #6d28d9;
+            --violet-800: #5b21b6;
+            --violet-900: #4c1d95;
+            --violet-950: #2e1065;
+            --pink-500: #ec4899;
+            --pink-600: #db2777;
+            --fuchsia-500: #d946ef;
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.25);
+            --danger: #ef4444;
+
+            /* Glassmorphism Variables */
+            --glass-bg: rgba(255, 255, 255, 0.72);
+            --glass-bg-hover: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass-border-subtle: rgba(124, 58, 237, 0.12);
+            --glass-blur: blur(20px);
+            --glass-shadow: 0 20px 40px -15px rgba(109, 40, 217, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.6);
+            --glass-shadow-lg: 0 25px 50px -12px rgba(109, 40, 217, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.8);
+
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-full: 9999px;
+
+            --text-main: #1e1b4b;
+            --text-muted: #6b7280;
+            --text-soft: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 10% 15%, rgba(192, 132, 252, 0.22) 0%, transparent 40%),
+                radial-gradient(circle at 90% 10%, rgba(244, 114, 182, 0.2) 0%, transparent 35%),
+                radial-gradient(circle at 50% 60%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 90%, rgba(168, 85, 247, 0.15) 0%, transparent 40%),
+                #f8f7ff;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background Blobs */
+        .ambient-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        .blob-1 { top: -100px; left: -100px; width: 450px; height: 450px; background: rgba(168, 85, 247, 0.35); }
+        .blob-2 { top: 200px; right: -120px; width: 400px; height: 400px; background: rgba(236, 72, 153, 0.25); animation-duration: 25s; }
+        .blob-3 { bottom: 50px; left: 20%; width: 500px; height: 500px; background: rgba(124, 58, 237, 0.2); animation-duration: 22s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 40px) scale(1.08); }
+            100% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* Hero Header with Curved Bottom Arch */
+        .hero-banner {
+            position: relative;
+            z-index: 10;
+            background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 40%, #9333ea 75%, #c026d3 100%);
+            color: white;
+            padding: 32px 32px 70px 32px;
+            border-radius: 0 0 44px 44px;
+            box-shadow: 0 20px 40px -10px rgba(109, 40, 217, 0.4);
+            overflow: hidden;
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 40%, rgba(244, 114, 182, 0.25) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .hero-inner {
+            max-width: 1140px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: white;
+            text-decoration: none;
+        }
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        .nav-pill-badge {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .nav-pill-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 10px #34d399;
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 720px;
+            margin: 0 auto 10px auto;
+        }
+        .hero-title {
+            font-size: 38px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .hero-title span {
+            background: linear-gradient(120deg, #fef08a 0%, #fbcfe8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-desc {
+            font-size: 15px;
+            opacity: 0.92;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .hero-tags {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .hero-tag {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        /* Container */
+        .main-container {
+            max-width: 1140px;
+            margin: -40px auto 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 20;
+        }
+
+        /* Human-Designed Glass Step Indicator */
+        .step-nav-glass {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-full);
+            padding: 10px 18px;
+            box-shadow: var(--glass-shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .step-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+        }
+        .step-pill.active {
+            background: linear-gradient(135deg, var(--violet-600), var(--fuchsia-500));
+            color: white;
+            box-shadow: 0 8px 20px -4px var(--primary-glow);
+        }
+        .step-pill.done {
+            background: var(--violet-100);
+            color: var(--violet-700);
+        }
+        .step-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .step-pill.active .step-num {
+            background: white;
+            color: var(--violet-700);
+        }
+        .step-pill.done .step-num {
+            background: var(--violet-600);
+            color: white;
+        }
+        .step-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: var(--violet-200);
+            margin: 0 10px;
+            border-radius: 2px;
+            transition: background 0.4s ease;
+        }
+        .step-line.done {
+            background: linear-gradient(90deg, var(--violet-400), var(--fuchsia-500));
+        }
+
+        /* Glassmorphic Card */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 36px 38px;
+            box-shadow: var(--glass-shadow-lg);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .card-header-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .card-heading {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-subtext {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        /* Upload Dropzone - Elegant Glass Style */
+        .upload-dropzone {
+            background: linear-gradient(135deg, rgba(245, 243, 255, 0.7) 0%, rgba(253, 244, 255, 0.7) 100%);
+            border: 2px dashed rgba(168, 85, 247, 0.4);
+            border-radius: var(--radius-lg);
+            padding: 56px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-dropzone:hover, .upload-dropzone.dragover {
+            border-color: var(--violet-600);
+            background: linear-gradient(135deg, rgba(237, 233, 254, 0.9) 0%, rgba(250, 232, 255, 0.9) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 35px -10px rgba(124, 58, 237, 0.2);
+        }
+        .dropzone-icon-circle {
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 18px auto;
+            background: linear-gradient(135deg, var(--violet-500), var(--fuchsia-500));
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 12px 24px -6px var(--primary-glow);
+            transition: transform 0.3s ease;
+        }
+        .upload-dropzone:hover .dropzone-icon-circle {
+            transform: scale(1.08) rotate(-4deg);
+        }
+        .dropzone-icon-circle svg { width: 36px; height: 36px; }
+        .dropzone-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+        .dropzone-desc {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+        .browse-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            color: var(--violet-700);
+            border: 1px solid var(--violet-200);
+            padding: 10px 22px;
+            border-radius: var(--radius-full);
+            font-size: 13.5px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+            transition: all 0.2s ease;
+        }
+        .upload-dropzone:hover .browse-pill-btn {
+            background: var(--violet-600);
+            color: white;
+            border-color: var(--violet-600);
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.3);
+        }
+        .upload-dropzone input[type="file"] { display: none; }
+
+        /* File Info Card */
+        .glass-file-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--violet-200);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-top: 20px;
+            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1);
+        }
+        .file-icon-box {
+            width: 46px;
+            height: 46px;
+            background: var(--violet-100);
+            color: var(--violet-700);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .file-details .file-name {
+            font-size: 15px;
+            font-weight: 750;
+            color: var(--text-main);
+        }
+        .file-details .file-size {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .btn-glass-remove {
+            margin-left: auto;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-glass-remove:hover {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
+        }
+
+        /* Sheet selector pills */
+        .sheet-pills-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .sheet-pill {
+            padding: 8px 20px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--violet-200);
+            background: white;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sheet-pill:hover {
+            border-color: var(--violet-500);
+            color: var(--violet-700);
+        }
+        .sheet-pill.active {
+            background: linear-gradient(135deg, var(--violet-600), var(--fuchsia-500));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.25);
+        }
+
+        /* Column Cards Grid */
+        .columns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .col-glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            box-shadow: 0 8px 20px -6px rgba(124, 58, 237, 0.08);
+            transition: all 0.25s ease;
+        }
+        .col-glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px -6px rgba(124, 58, 237, 0.15);
+            border-color: var(--violet-300);
+        }
+        .col-glass-card.is-required {
+            background: linear-gradient(135deg, rgba(245, 243, 255, 0.95), rgba(253, 244, 255, 0.95));
+            border-color: var(--violet-300);
+        }
+        .col-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .col-card-name {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .type-badge {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .type-date { background: #dcfce7; color: #15803d; }
+        .type-number { background: #ede9fe; color: #6d28d9; }
+        .type-text { background: #fef3c7; color: #b45309; }
+        .type-boolean { background: #fae8ff; color: #a21caf; }
+        .col-card-stats {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Column Selection Toolbar & Card Select Checkboxes */
+        .col-selection-toolbar {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--violet-200);
+            border-radius: var(--radius-md);
+            padding: 14px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.05);
+        }
+        .btn-tiny {
+            background: white;
+            border: 1px solid var(--violet-200);
+            color: var(--violet-700);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-tiny:hover {
+            background: var(--violet-50);
+            border-color: var(--violet-400);
+            transform: translateY(-1px);
+        }
+        .btn-tiny-danger {
+            color: var(--danger);
+            border-color: #fecaca;
+        }
+        .btn-tiny-danger:hover {
+            background: #fef2f2;
+            border-color: var(--danger);
+        }
+        .col-card-select-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--violet-200);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--violet-900);
+            cursor: pointer;
+            user-select: none;
+        }
+        .col-card-select-label input[type="checkbox"] {
+            accent-color: var(--violet-600);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .col-glass-card.is-deselected {
+            opacity: 0.55;
+            background: #f9fafb;
+            border-color: #e5e7eb;
+        }
+
+        /* Strike Mid ± Range Filter Controls */
+        .strike-mid-box {
+            background: linear-gradient(135deg, rgba(245, 243, 255, 0.95), rgba(250, 245, 255, 0.95));
+            border: 1.5px solid var(--violet-300);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.06);
+        }
+        .strike-calc-badge {
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid var(--violet-200);
+            border-radius: var(--radius-full);
+            padding: 7px 16px;
+            font-size: 13px;
+            color: var(--violet-950);
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.08);
+        }
+
+        /* Date Quick-Select Pills */
+        .date-single-container {
+            width: 100%;
+        }
+        .date-pills-box {
+            margin-top: 12px;
+            background: linear-gradient(135deg, rgba(245, 243, 255, 0.8), rgba(255, 255, 255, 0.95));
+            border: 1px dashed var(--violet-300);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+        }
+        .date-quick-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: white;
+            border: 1px solid var(--violet-200);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--violet-900);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            user-select: none;
+        }
+        .date-quick-pill:hover {
+            border-color: var(--violet-500);
+            background: var(--violet-50);
+            transform: translateY(-1px);
+        }
+        .date-quick-pill.active {
+            background: linear-gradient(135deg, var(--violet-600), var(--violet-700));
+            color: white !important;
+            border-color: var(--violet-700);
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+        }
+        .date-quick-pill .pill-count {
+            background: rgba(124, 58, 237, 0.12);
+            color: var(--violet-800);
+            padding: 1px 7px;
+            border-radius: var(--radius-full);
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+        .date-quick-pill.active .pill-count {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        /* Filter Row Accordion */
+        .filter-panel {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--violet-200);
+            border-radius: var(--radius-md);
+            padding: 18px 22px;
+            margin-bottom: 14px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .filter-panel.is-active {
+            border-color: var(--violet-500);
+            background: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.15);
+        }
+        .filter-head-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .filter-name-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .filter-col-title {
+            font-size: 15px;
+            font-weight: 750;
+            color: var(--text-main);
+        }
+        .status-chip {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: var(--radius-full);
+        }
+        .status-chip.active { background: #ede9fe; color: #6d28d9; }
+        .status-chip.off { background: #f3f4f6; color: #9ca3af; }
+
+        /* Modern iOS-Style Toggle Switch */
+        .ios-toggle {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: #e2e8f0;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .ios-toggle.active {
+            background: linear-gradient(135deg, var(--violet-600), var(--fuchsia-500));
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+        .ios-toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .ios-toggle.active::after {
+            transform: translateX(22px);
+        }
+
+        .filter-body-drawer {
+            display: none;
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid var(--violet-100);
+        }
+        .filter-body-drawer.visible { display: block; }
+
+        /* Filter Controls */
+        .filter-mode-pills {
+            display: flex;
+            gap: 8px;
+            background: var(--violet-50);
+            padding: 6px;
+            border-radius: var(--radius-full);
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            width: fit-content;
+            border: 1px solid var(--violet-100);
+        }
+        .filter-mode-pills label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+        .filter-mode-pills input[type="radio"] { display: none; }
+        .filter-mode-pills label:has(input:checked) {
+            background: white;
+            color: var(--violet-700);
+            box-shadow: 0 4px 10px rgba(124, 58, 237, 0.12);
+        }
+
+        .inputs-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .field-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .field-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .glass-input {
+            background: white;
+            border: 1.5px solid var(--violet-200);
+            border-radius: var(--radius-md);
+            padding: 9px 14px;
+            font-size: 13.5px;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .glass-input:focus {
+            border-color: var(--violet-500);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+        }
+
+        /* Text Filter Box */
+        .text-search-container {
+            border: 1.5px solid var(--violet-200);
+            border-radius: var(--radius-md);
+            background: white;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .text-inner-search {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid var(--violet-100);
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #1e1b4b !important;
+            outline: none;
+            background: var(--violet-50);
+        }
+        .text-inner-search:focus { background: white; }
+        .checkbox-options-scroll {
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 6px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .checkbox-item:hover { background: var(--violet-50); }
+        .checkbox-item input[type="checkbox"] {
+            accent-color: var(--violet-600);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Promo Style Strike Configuration Card (matches user uploaded reference) */
+        .promo-config-card {
+            background: linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #c026d3 100%);
+            border-radius: var(--radius-lg);
+            padding: 30px 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 28px;
+            box-shadow: 0 20px 40px -10px rgba(124, 58, 237, 0.35);
+        }
+        .promo-config-card::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .promo-head-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .promo-title {
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .promo-inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .promo-input-box {
+            background: rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+        }
+        .promo-input-box label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+            margin-bottom: 6px;
+        }
+        .promo-input-box input {
+            width: 100%;
+            background: #ffffff !important;
+            border: 2px solid rgba(255, 255, 255, 0.9) !important;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 800;
+            color: #1e1b4b !important; /* High-contrast dark text */
+            outline: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .promo-input-box input:focus {
+            background: #ffffff !important;
+            color: #4c1d95 !important;
+            border-color: #fbcfe8 !important;
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.3) !important;
+        }
+        .promo-input-box input::placeholder {
+            color: #9ca3af !important;
+            font-weight: 500;
+        }
+        .promo-hint {
+            font-size: 12.5px;
+            opacity: 0.9;
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Pill Tabs */
+        .glass-tabs-row {
+            display: flex;
+            gap: 8px;
+            background: var(--violet-100);
+            padding: 6px;
+            border-radius: var(--radius-full);
+            width: fit-content;
+            margin-bottom: 20px;
+        }
+        .glass-tab-btn {
+            padding: 9px 24px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: transparent;
+            font-size: 13.5px;
+            font-weight: 750;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .glass-tab-btn.active {
+            background: white;
+            color: var(--violet-700);
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.15);
+        }
+
+        /* Glass Data Table */
+        .table-glass-wrap {
+            background: white;
+            border: 1px solid var(--violet-200);
+            border-radius: var(--radius-lg);
+            overflow-x: auto;
+            max-height: 480px;
+            box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.08);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        th {
+            background: linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 800;
+            color: var(--violet-900);
+            border-bottom: 1.5px solid var(--violet-200);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--violet-50);
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+        }
+        tr:hover td {
+            background: #faf5ff;
+        }
+        tr.atm-glow-row td {
+            background: #fef3c7 !important;
+            font-weight: 800;
+            color: #92400e;
+        }
+
+        /* Action Buttons */
+        .actions-flex {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 14px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+        .btn-modern {
+            padding: 12px 28px;
+            border-radius: var(--radius-full);
+            font-size: 14px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
+        .btn-modern-primary {
+            background: linear-gradient(135deg, var(--violet-600) 0%, var(--fuchsia-500) 100%);
+            color: white;
+            box-shadow: 0 10px 25px -5px var(--primary-glow);
+        }
+        .btn-modern-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(124, 58, 237, 0.45);
+        }
+        .btn-modern-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 10px 25px -5px var(--success-glow);
+        }
+        .btn-modern-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.45);
+        }
+        .btn-modern-outline {
+            background: white;
+            color: var(--text-main);
+            border: 1.5px solid var(--violet-200);
+        }
+        .btn-modern-outline:hover:not(:disabled) {
+            background: var(--violet-50);
+            border-color: var(--violet-400);
+            transform: translateY(-1px);
+        }
+        .btn-modern:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Summary Chips */
+        .stats-chips-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .glass-stat-chip {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--violet-200);
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 750;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.05);
+        }
+        .badge-ce { background: #ede9fe; color: #6d28d9; }
+        .badge-pe { background: #fee2e2; color: #dc2626; }
+
+        /* Alerts */
+        .glass-alert {
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            line-height: 1.5;
+        }
+        .glass-alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+        .glass-alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .hero-banner { padding: 24px 20px 50px 20px; border-radius: 0 0 28px 28px; }
+            .hero-title { font-size: 28px; }
+            .glass-card { padding: 24px 20px; }
+            .step-title { display: none; }
+            .step-line { margin: 0 4px; }
+            .promo-inputs-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Ambient glowing background blobs -->
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+    <div class="ambient-blob blob-3"></div>
+
+    <!-- Hero Curved Banner (Inspired by User's Reference) -->
+    <header class="hero-banner">
+        <div class="hero-inner">
+            <nav class="hero-nav">
+                <a href="javascript:void(0)" class="brand-logo">
+                    <div class="brand-icon">⚡</div>
+                    <span>StrikeFlow</span>
+                </a>
+                <div class="nav-pill-badge">
+                    <span class="dot"></span>
+                    <span>100% In-Browser Engine</span>
+                </div>
+            </nav>
+
+            <div class="hero-content">
+                <h1 class="hero-title">Transform Options Data into <span>Sheet2</span></h1>
+                <p class="hero-desc">
+                    Submit any Excel or CSV bhavcopy file, apply dynamic filters on any column, and export the exact formatted options chain with live formulas.
+                </p>
+                <div class="hero-tags">
+                    <span class="hero-tag">✨ Zero Server Needed</span>
+                    <span class="hero-tag">🎯 Dynamic Datatype Filters</span>
+                    <span class="hero-tag">📊 Exact Sheet2 + DATA Export</span>
+                    <span class="hero-tag">🔒 Private & Secure</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Floating Glass Step Navigation -->
+        <nav class="step-nav-glass">
+            <div class="step-pill active" id="step1-circle">
+                <div class="step-num">1</div>
+                <span class="step-title" id="step1-label">Upload File</span>
+            </div>
+            <div class="step-line" id="conn1"></div>
+            <div class="step-pill" id="step2-circle">
+                <div class="step-num">2</div>
+                <span class="step-title" id="step2-label">Set Filters</span>
+            </div>
+            <div class="step-line" id="conn2"></div>
+            <div class="step-pill" id="step3-circle">
+                <div class="step-num">3</div>
+                <span class="step-title" id="step3-label">Configure & Preview</span>
+            </div>
+            <div class="step-line" id="conn3"></div>
+            <div class="step-pill" id="step4-circle">
+                <div class="step-num">4</div>
+                <span class="step-title" id="step4-label">Download Result</span>
+            </div>
+        </nav>
+
+        <!-- STEP 1: Upload File -->
+        <section id="step1" class="glass-card">
+            <div class="card-header-row">
+                <div>
+                    <h2 class="card-heading">📁 Step 1: Submit Your Options File</h2>
+                    <p class="card-subtext">Upload your raw options data (.xlsx, .xls, or .csv). We'll inspect every column and its datatype.</p>
+                </div>
+            </div>
+
+            <div class="upload-dropzone" id="uploadArea">
+                <div class="dropzone-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                </div>
+                <h3 class="dropzone-title">Drag & Drop Your File Here</h3>
+                <p class="dropzone-desc">Supports Excel (.xlsx, .xls) and CSV (.csv) bhavcopy files</p>
+                <div class="browse-pill-btn">
+                    <span>Choose File from Computer</span>
+                </div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+            </div>
+
+            <div id="fileInfo" class="glass-file-info hidden">
+                <div class="file-icon-box">📊</div>
+                <div class="file-details">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-size" id="fileSize"></div>
+                </div>
+                <button class="btn-glass-remove" id="removeFile">Remove File</button>
+            </div>
+
+            <div id="sheetSelector" class="hidden" style="margin-top: 24px;">
+                <label style="font-size: 13.5px; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 8px;">
+                    Select Worksheet:
+                </label>
+                <div class="sheet-pills-row" id="sheetButtons"></div>
+            </div>
+        </section>
+
+        <!-- STEP 2: Columns & Filters -->
+        <section id="step2" class="glass-card hidden">
+            <div class="card-header-row">
+                <div>
+                    <h2 class="card-heading">🔍 Step 2: Columns & Datatype Filters</h2>
+                    <p class="card-subtext">Set filters according to each column's datatype (Date ranges, Number limits, Text checklists).</p>
+                </div>
+                <div class="glass-stat-chip" id="rowCountBadge">0 rows loaded</div>
+            </div>
+
+            <div id="requiredColumnsAlert" class="glass-alert glass-alert-error hidden">
+                <span style="font-size: 20px;">⚠️</span>
+                <div id="requiredColumnsMsg"></div>
+            </div>
+
+            <div class="col-selection-toolbar">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <span style="font-weight:800; font-size:14px; color:var(--violet-950);">📋 Export Columns Selection:</span>
+                    <span class="status-chip active" id="selectedColumnsBadge">All Columns Selected</span>
+                    <span style="font-size:12px; color:var(--text-muted);">Choose which columns to export into the DATA sheet & CSV</span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <button class="btn-tiny" onclick="selectAllOutputColumns(true)">Select All</button>
+                    <button class="btn-tiny" onclick="selectCoreColumnsOnly()">Core 7 Columns Only</button>
+                    <button class="btn-tiny btn-tiny-danger" onclick="selectAllOutputColumns(false)">Clear All</button>
+                </div>
+            </div>
+            <div id="columnsList" class="columns-grid"></div>
+
+            <hr style="border: none; border-top: 1px solid var(--violet-200); margin: 28px 0;">
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="font-size: 17px; font-weight: 800;">🎛️ Column Filter Controls</h3>
+                <button class="btn-modern btn-modern-outline" style="padding: 7px 18px; font-size: 12.5px;" onclick="resetAllFilters()">Reset All Filters</button>
+            </div>
+
+            <div id="filtersContainer"></div>
+
+            <div class="actions-flex">
+                <button class="btn-modern btn-modern-outline" onclick="goToStep(1)">← Back to Upload</button>
+                <button class="btn-modern btn-modern-primary" id="applyFiltersBtn" onclick="applyFilters()">Apply Filters & Preview →</button>
+            </div>
+        </section>
+
+        <!-- STEP 3: Configure Output & Preview -->
+        <section id="step3" class="glass-card hidden">
+            <div class="card-header-row">
+                <div>
+                    <h2 class="card-heading">⚙️ Step 3: Configure Output & Preview</h2>
+                    <p class="card-subtext">Adjust strike gap and NIFTY spot reference. Preview the filtered data and formatted Sheet2 layout.</p>
+                </div>
+            </div>
+
+            <div class="stats-chips-row" id="statsBar"></div>
+
+            <!-- Promo Style Configuration Card -->
+            <div class="promo-config-card">
+                <div class="promo-head-flex">
+                    <div class="promo-title">
+                        <span>📐</span>
+                        <span>Strike & ATM Configuration</span>
+                    </div>
+                    <span style="font-size: 12px; background: rgba(255,255,255,0.25); padding: 4px 12px; border-radius: var(--radius-full); font-weight: 700;">
+                        Auto-Synced
+                    </span>
+                </div>
+                <div class="promo-inputs-grid">
+                    <div class="promo-input-box">
+                        <label>Strike Interval (Gap)</label>
+                        <input type="number" id="strikePriceGap" value="50" min="1" oninput="onConfigChange()">
+                    </div>
+                    <div class="promo-input-box">
+                        <label>Strikes Above & Below ATM</label>
+                        <input type="number" id="numStrikes" value="14" min="1" max="50" oninput="onConfigChange()">
+                    </div>
+                    <div class="promo-input-box">
+                        <label>NIFTY / Spot Closing Price</label>
+                        <input type="number" id="niftyPrice" placeholder="Auto-detected or enter value" oninput="onConfigChange()">
+                    </div>
+                </div>
+                <div class="promo-mode-row" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="font-size: 13.5px; font-weight: 700; color: white;">Sheet2 Strike Rows:</span>
+                        <div style="display: inline-flex; gap: 6px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: var(--radius-full);">
+                            <label id="lblModeFiltered" style="display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-full); font-size: 12px; font-weight: 700; cursor: pointer; color: #1e1b4b; background: #fef08a; transition: all 0.2s ease;">
+                                <input type="radio" name="sheet2StrikeMode" value="filteredOnly" checked onchange="toggleSheet2StrikeMode('filteredOnly')" style="accent-color: #ca8a04;">
+                                <span id="sheet2FilteredStrikesCountText">🎯 Filtered Strikes Only</span>
+                            </label>
+                            <label id="lblModeGrid" style="display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-full); font-size: 12px; font-weight: 700; cursor: pointer; color: white; background: transparent; transition: all 0.2s ease;">
+                                <input type="radio" name="sheet2StrikeMode" value="grid" onchange="toggleSheet2StrikeMode('grid')" style="accent-color: #ca8a04;">
+                                <span>📐 Radiating Grid (±14 strikes)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="strikesModeExplainer" style="font-size: 12px; color: rgba(255,255,255,0.92); font-weight: 600;">
+                        ✨ Sheet2 will only contain strikes matching your filter.
+                    </div>
+                </div>
+                <div class="promo-hint">
+                    💡 Reference ATM Strike is calculated as <code>ROUND(NIFTY / Gap, 0) * Gap</code>. Rows radiate out from ATM just like in <code>sent.xlsx</code> Sheet2.
+                </div>
+            </div>
+
+            <div class="glass-tabs-row">
+                <button class="glass-tab-btn active" id="tabFilteredBtn" onclick="switchPreviewTab('filtered')">Filtered Raw Rows</button>
+                <button class="glass-tab-btn" id="tabOutputBtn" onclick="switchPreviewTab('output')">Sheet2 Formatted Layout</button>
+            </div>
+
+            <div id="filteredDataTab">
+                <div class="table-glass-wrap" id="filteredPreview"></div>
+            </div>
+
+            <div id="outputTab" class="hidden">
+                <div class="table-glass-wrap" id="outputPreview"></div>
+            </div>
+
+            <div class="actions-flex">
+                <button class="btn-modern btn-modern-outline" onclick="goToStep(2)">← Back to Filters</button>
+                <button class="btn-modern btn-modern-primary" onclick="proceedToDownload()">Proceed to Download →</button>
+            </div>
+        </section>
+
+        <!-- STEP 4: Download Formatted Excel -->
+        <section id="step4" class="glass-card hidden">
+            <div class="card-header-row">
+                <div>
+                    <h2 class="card-heading">✅ Step 4: Download Formatted Excel</h2>
+                    <p class="card-subtext">Your output file matches the exact Sheet2 structure and formulas of <code>sent.xlsx</code>.</p>
+                </div>
+            </div>
+
+            <div class="glass-alert glass-alert-success">
+                <span style="font-size: 22px;">🎉</span>
+                <div>
+                    <strong>Your formatted Excel file is ready!</strong>
+                    <p style="margin-top: 4px; font-size: 13px;">The exported workbook includes two linked worksheets:</p>
+                    <ul style="margin: 6px 0 0 18px; font-size: 13px; line-height: 1.6;">
+                        <li><strong>Sheet2</strong>: Columns B (CE ID), D (PREMIUM), E (AVG), F (CE CLOSE), G (STRIKE), H (PE CLOSE), I (AVG), J (PREMIUM), R (PE ID), T (call low), U (put hig), V (=(T+U)/2), X (put low), Y (call hig), Z (=(X+Y)/2).</li>
+                        <li><strong>DATA</strong>: Filtered source records with NIFTY spot and strike interval linked.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="finalSummaryStats" style="margin-bottom: 20px;"></div>
+
+            <div class="table-glass-wrap" id="finalPreviewTable" style="margin-bottom: 24px;"></div>
+
+            <div class="actions-flex">
+                <button class="btn-modern btn-modern-outline" onclick="goToStep(3)">← Back to Configure</button>
+                <button class="btn-modern btn-modern-outline" onclick="downloadFilteredRawCSV()">📄 Export Filtered CSV</button>
+                <button class="btn-modern btn-modern-success" onclick="downloadExcelFile()" style="font-size: 15px; padding: 14px 34px;">
+                    ⬇️ Download Formatted Excel (.xlsx)
+                </button>
+                <button class="btn-modern btn-modern-outline" onclick="resetApp()">🔄 Convert Another File</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    // ===== APPLICATION STATE =====
+    const state = {
+        workbook: null,
+        sheetNames: [],
+        selectedSheet: null,
+        rawData: [],
+        headers: [],
+        columnTypes: {},
+        columnStats: {},
+        filters: {},
+        filteredData: [],
+        outputStrikes: [],
+        outputLookup: {},
+        atmStrike: 24000,
+        niftyPrice: 24000,
+        gap: 50,
+    };
+
+    // ===== NAVIGATION =====
+    function goToStep(n) {
+        for (let i = 1; i <= 4; i++) {
+            const stepEl = document.getElementById(`step${i}`);
+            const pill = document.getElementById(`step${i}-circle`);
+            const label = document.getElementById(`step${i}-label`);
+
+            stepEl.classList.toggle('hidden', i !== n);
+            pill.classList.remove('active', 'done');
+
+            if (i < n) {
+                pill.classList.add('done');
+                pill.querySelector('.step-num').textContent = '✓';
+            } else if (i === n) {
+                pill.classList.add('active');
+                pill.querySelector('.step-num').textContent = i;
+            } else {
+                pill.querySelector('.step-num').textContent = i;
+            }
+        }
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById(`conn${i}`).classList.toggle('done', i < n);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ===== DATE PARSER =====
+    function parseAnyDate(val) {
+        if (val === null || val === undefined || val === '') return null;
+        if (val instanceof Date) {
+            if (isNaN(val.getTime())) return null;
+            const y = val.getFullYear();
+            const m = String(val.getMonth() + 1).padStart(2, '0');
+            const d = String(val.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        if (typeof val === 'number' && val > 20000 && val < 80000) {
+            const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+            if (!isNaN(d.getTime())) {
+                const y = d.getUTCFullYear();
+                const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(d.getUTCDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+        }
+        let s = String(val).trim().replace(/^["']|["']$/g, '');
+        if (!s) return null;
+
+        // ISO format YYYY-MM-DD or YYYY/MM/DD
+        const iso = s.match(/^(\d{4})[-\/\.](\d{1,2})[-\/\.](\d{1,2})/);
+        if (iso) {
+            return `${iso[1]}-${iso[2].padStart(2, '0')}-${iso[3].padStart(2, '0')}`;
+        }
+
+        // Standard Indian / International format: DD-MM-YYYY or DD/MM/YYYY
+        const dmy = s.match(/^(\d{1,2})[-\/\.](\d{1,2})[-\/\.](\d{4})/);
+        if (dmy) {
+            let d = dmy[1].padStart(2, '0');
+            let m = dmy[2].padStart(2, '0');
+            let y = dmy[3];
+            if (Number(m) > 12 && Number(d) <= 12) {
+                const tmp = d; d = m; m = tmp;
+            }
+            return `${y}-${m}-${d}`;
+        }
+
+        // Text month like 09-Nov-2026 or 28-Mar-2024
+        const monthNames = {
+            jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+            jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12'
+        };
+        const textMatch = s.match(/^(\d{1,2})[-\s\/]+([A-Za-z]{3,9})[-\s\/]+(\d{4})/);
+        if (textMatch) {
+            const d = textMatch[1].padStart(2, '0');
+            const mon = textMatch[2].slice(0, 3).toLowerCase();
+            const y = textMatch[3];
+            if (monthNames[mon]) {
+                return `${y}-${monthNames[mon]}-${d}`;
+            }
+        }
+
+        const parsed = new Date(s);
+        if (!isNaN(parsed.getTime())) {
+            const y = parsed.getFullYear();
+            const m = String(parsed.getMonth() + 1).padStart(2, '0');
+            const d = String(parsed.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        return null;
+    }
+
+    // ===== FILE UPLOAD & PARSING =====
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleSelectedFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleSelectedFile(e.target.files[0]);
+    });
+
+    document.getElementById('removeFile').addEventListener('click', resetApp);
+
+    function handleSelectedFile(file) {
+        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+        if (!['.xlsx', '.xls', '.csv'].includes(ext)) {
+            alert('Please select a valid Excel (.xlsx, .xls) or CSV (.csv) file.');
+            return;
+        }
+
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        document.getElementById('fileInfo').classList.remove('hidden');
+        uploadArea.classList.add('hidden');
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const isCsv = ext === '.csv';
+                state.workbook = XLSX.read(data, { type: 'array', cellDates: !isCsv, raw: isCsv });
+                state.sheetNames = state.workbook.SheetNames;
+
+                if (state.sheetNames.length > 1) {
+                    showSheetSelectorUI();
+                } else {
+                    processSheetData(state.sheetNames[0]);
+                }
+            } catch (err) {
+                alert('Error parsing Excel file: ' + err.message);
+                console.error(err);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function showSheetSelectorUI() {
+        const container = document.getElementById('sheetButtons');
+        container.innerHTML = '';
+        state.sheetNames.forEach((name, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'sheet-pill' + (i === 0 ? ' active' : '');
+            btn.textContent = name;
+            btn.onclick = () => {
+                container.querySelectorAll('.sheet-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                processSheetData(name);
+            };
+            container.appendChild(btn);
+        });
+        document.getElementById('sheetSelector').classList.remove('hidden');
+        processSheetData(state.sheetNames[0]);
+    }
+
+    function processSheetData(sheetName) {
+        state.selectedSheet = sheetName;
+        const ws = state.workbook.Sheets[sheetName];
+        const rawJson = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+        if (!rawJson || rawJson.length === 0) {
+            alert('Selected worksheet is empty.');
+            return;
+        }
+
+        // Find header row
+        let headerRowIdx = 0;
+        for (let i = 0; i < rawJson.length; i++) {
+            const nonEmpties = rawJson[i].filter(c => c !== '' && c !== null && c !== undefined);
+            if (nonEmpties.length >= 3) {
+                headerRowIdx = i;
+                break;
+            }
+        }
+
+        state.headers = rawJson[headerRowIdx].map((h, i) => {
+            const trimmed = String(h || '').trim();
+            return trimmed || `Col_${i + 1}`;
+        });
+
+        state.rawData = [];
+        for (let i = headerRowIdx + 1; i < rawJson.length; i++) {
+            const rowArr = rawJson[i];
+            const rowObj = {};
+            let hasAnyVal = false;
+            state.headers.forEach((h, colIdx) => {
+                const cellVal = rowArr[colIdx] !== undefined ? rowArr[colIdx] : '';
+                rowObj[h] = cellVal;
+                if (cellVal !== '' && cellVal !== null) hasAnyVal = true;
+            });
+            if (hasAnyVal) state.rawData.push(rowObj);
+        }
+
+        // Auto-generate 'Identifier' if absent (e.g. from STR_PRICE + OPT_TYPE)
+        const strCol = findHeader('STR_PRICE');
+        const optCol = findHeader('OPT_TYPE');
+        if (!findHeader('Identifier') && strCol && optCol) {
+            state.headers.unshift('Identifier');
+            state.rawData.forEach(r => {
+                const s = String(r[strCol] || '').trim();
+                const o = String(r[optCol] || '').trim();
+                r['Identifier'] = `${s}${o}`;
+            });
+        }
+
+        document.getElementById('rowCountBadge').textContent = `${state.rawData.length} rows loaded`;
+
+        detectColumnTypes();
+        buildColumnsUI();
+        buildFiltersUI();
+        goToStep(2);
+    }
+
+    // ===== DATATYPE DETECTION =====
+    function detectColumnTypes() {
+        state.columnTypes = {};
+        state.columnStats = {};
+
+        state.headers.forEach(col => {
+            const vals = state.rawData.map(r => r[col]).filter(v => v !== '' && v !== null && v !== undefined);
+            if (vals.length === 0) {
+                state.columnTypes[col] = 'text';
+                state.columnStats[col] = { count: 0, unique: 0 };
+                return;
+            }
+
+            let numCount = 0, dateCount = 0, boolCount = 0;
+            vals.forEach(v => {
+                if (v instanceof Date) { dateCount++; return; }
+                if (typeof v === 'boolean') { boolCount++; return; }
+                if (typeof v === 'number') { numCount++; return; }
+                const parsedD = parseAnyDate(v);
+                if (parsedD && String(v).match(/[\-\/\.]|[a-zA-Z]/)) {
+                    dateCount++;
+                } else if (!isNaN(Number(v)) && String(v).trim() !== '') {
+                    numCount++;
+                }
+            });
+
+            const total = vals.length;
+            if (dateCount > total * 0.5) state.columnTypes[col] = 'date';
+            else if (numCount > total * 0.5) state.columnTypes[col] = 'number';
+            else if (boolCount > total * 0.5) state.columnTypes[col] = 'boolean';
+            else state.columnTypes[col] = 'text';
+
+            const uniqueVals = new Set(vals.map(v => String(v).trim()));
+            state.columnStats[col] = {
+                count: vals.length,
+                unique: uniqueVals.size,
+            };
+
+            if (state.columnTypes[col] === 'number') {
+                const nums = vals.map(Number).filter(n => !isNaN(n));
+                if (nums.length) {
+                    state.columnStats[col].min = Math.min(...nums);
+                    state.columnStats[col].max = Math.max(...nums);
+                }
+            } else if (state.columnTypes[col] === 'date') {
+                const parsedDates = vals.map(parseAnyDate).filter(Boolean).sort();
+                if (parsedDates.length) {
+                    state.columnStats[col].min = parsedDates[0];
+                    state.columnStats[col].max = parsedDates[parsedDates.length - 1];
+                }
+                const dateMap = {};
+                vals.forEach(v => {
+                    const s = String(v).trim().replace(/^["']|["']$/g, '');
+                    if (!s) return;
+                    dateMap[s] = (dateMap[s] || 0) + 1;
+                });
+                state.columnStats[col].uniqueDates = Object.entries(dateMap).map(([raw, count]) => ({
+                    raw,
+                    iso: parseAnyDate(raw),
+                    count
+                })).sort((a,b) => b.count - a.count);
+            }
+        });
+    }
+
+    function isStrikePriceColumn(col) {
+        if (!col) return false;
+        const norm = String(col).trim().toUpperCase().replace(/[\s_]+/g, '');
+        return norm === 'STRPRICE' || norm === 'STRIKEPRICE' || norm === 'STRIKE' || norm === 'STRIKEPR';
+    }
+
+    // ===== COLUMNS SUMMARY & EXPORT SELECTION UI =====
+    function buildColumnsUI() {
+        const container = document.getElementById('columnsList');
+        container.innerHTML = '';
+
+        if (!state.selectedColumns || state.selectedColumns.length === 0) {
+            state.selectedColumns = [...state.headers];
+        }
+
+        updateSelectedColumnsBadge();
+
+        const requiredCols = ['Identifier', 'STR_PRICE', 'OPT_TYPE', 'OPEN', 'HIGH', 'LOW', 'CLOSE'];
+        const found = [];
+        const missing = [];
+
+        requiredCols.forEach(rc => {
+            if (findHeader(rc)) found.push(rc);
+            else missing.push(rc);
+        });
+
+        const alertBox = document.getElementById('requiredColumnsAlert');
+        const applyBtn = document.getElementById('applyFiltersBtn');
+
+        if (missing.length > 0) {
+            alertBox.classList.remove('hidden');
+            document.getElementById('requiredColumnsMsg').innerHTML =
+                `Missing required columns: <strong>${missing.join(', ')}</strong>. Expected columns: <em>${requiredCols.join(', ')}</em>`;
+            applyBtn.disabled = true;
+        } else {
+            alertBox.classList.add('hidden');
+            applyBtn.disabled = false;
+        }
+
+        state.headers.forEach(col => {
+            const type = state.columnTypes[col];
+            const stats = state.columnStats[col];
+            const isReq = requiredCols.some(rc => col.trim().toUpperCase().replace(/[\s_]+/g, '') === rc.toUpperCase().replace(/[\s_]+/g, ''));
+            const isSelected = state.selectedColumns.includes(col);
+
+            const card = document.createElement('div');
+            card.className = 'col-glass-card' + (isReq ? ' is-required' : '') + (!isSelected ? ' is-deselected' : '');
+            card.id = `colcard_${col.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+
+            let statsLine = `${stats.count} values, ${stats.unique} unique`;
+            if (type === 'number' && stats.min !== undefined) {
+                statsLine += `<br>Range: ${stats.min} – ${stats.max}`;
+            } else if (type === 'date' && stats.min) {
+                statsLine += `<br>${stats.min} to ${stats.max}`;
+            }
+
+            card.innerHTML = `
+                <div class="col-card-head">
+                    <span class="col-card-name" title="${escapeHtml(col)}">
+                        ${isReq ? '⭐ ' : ''}${escapeHtml(col)}
+                    </span>
+                    <span class="type-badge type-${type}">${type}</span>
+                </div>
+                <div class="col-card-stats">${statsLine}</div>
+                <label class="col-card-select-label">
+                    <input type="checkbox" class="col-export-cb" data-col="${escapeHtml(col)}" ${isSelected ? 'checked' : ''} onchange="onColCheckboxChange(this, '${escapeHtml(col)}')">
+                    <span>Include in Output File</span>
+                </label>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function onColCheckboxChange(cb, col) {
+        const safeId = col.replace(/[^a-zA-Z0-9_]/g, '_');
+        const card = document.getElementById(`colcard_${safeId}`);
+        if (cb.checked) {
+            if (!state.selectedColumns.includes(col)) state.selectedColumns.push(col);
+            if (card) card.classList.remove('is-deselected');
+        } else {
+            state.selectedColumns = state.selectedColumns.filter(c => c !== col);
+            if (card) card.classList.add('is-deselected');
+        }
+        updateSelectedColumnsBadge();
+    }
+
+    function updateSelectedColumnsBadge() {
+        const badge = document.getElementById('selectedColumnsBadge');
+        if (badge) {
+            badge.textContent = `${state.selectedColumns.length} / ${state.headers.length} Selected`;
+            badge.className = state.selectedColumns.length > 0 ? 'status-chip active' : 'status-chip off';
+        }
+    }
+
+    function selectAllOutputColumns(selectAll) {
+        if (selectAll) {
+            state.selectedColumns = [...state.headers];
+        } else {
+            state.selectedColumns = [];
+        }
+        document.querySelectorAll('.col-export-cb').forEach(cb => {
+            cb.checked = selectAll;
+            const col = cb.dataset.col;
+            const safeId = col.replace(/[^a-zA-Z0-9_]/g, '_');
+            const card = document.getElementById(`colcard_${safeId}`);
+            if (card) card.classList.toggle('is-deselected', !selectAll);
+        });
+        updateSelectedColumnsBadge();
+    }
+
+    function selectCoreColumnsOnly() {
+        const coreCols = ['Identifier', 'STR_PRICE', 'OPT_TYPE', 'OPEN', 'HIGH', 'LOW', 'CLOSE'];
+        state.selectedColumns = [];
+        document.querySelectorAll('.col-export-cb').forEach(cb => {
+            const col = cb.dataset.col;
+            const safeId = col.replace(/[^a-zA-Z0-9_]/g, '_');
+            const isCore = coreCols.some(rc => col.trim().toUpperCase().replace(/[\s_]+/g, '') === rc.toUpperCase().replace(/[\s_]+/g, ''));
+            cb.checked = isCore;
+            if (isCore) state.selectedColumns.push(col);
+            const card = document.getElementById(`colcard_${safeId}`);
+            if (card) card.classList.toggle('is-deselected', !isCore);
+        });
+        updateSelectedColumnsBadge();
+    }
+
+    // ===== FILTERS BUILDER UI =====
+    function buildFiltersUI() {
+        const container = document.getElementById('filtersContainer');
+        container.innerHTML = '';
+        state.filters = {};
+
+        state.headers.forEach(col => {
+            const type = state.columnTypes[col];
+            const stats = state.columnStats[col];
+            const safeColId = col.replace(/[^a-zA-Z0-9_]/g, '_');
+
+            const group = document.createElement('div');
+            group.className = 'filter-panel';
+            group.id = `group_${safeColId}`;
+
+            group.innerHTML = `
+                <div class="filter-head-flex">
+                    <div class="filter-name-group">
+                        <span class="filter-col-title">${escapeHtml(col)}</span>
+                        <span class="type-badge type-${type}">${type}</span>
+                        <span class="status-chip off" id="badge_${safeColId}">Filter OFF</span>
+                    </div>
+                    <div class="ios-toggle" id="toggle_${safeColId}" data-col="${escapeHtml(col)}"></div>
+                </div>
+                <div class="filter-body-drawer" id="controls_${safeColId}">
+                    ${renderFilterControls(col, type, stats, safeColId)}
+                </div>
+            `;
+            container.appendChild(group);
+
+            const toggle = document.getElementById(`toggle_${safeColId}`);
+            const controls = document.getElementById(`controls_${safeColId}`);
+            const badge = document.getElementById(`badge_${safeColId}`);
+
+            toggle.addEventListener('click', () => {
+                const isActive = toggle.classList.toggle('active');
+                controls.classList.toggle('visible', isActive);
+                group.classList.toggle('is-active', isActive);
+                if (isActive) {
+                    badge.className = 'status-chip active';
+                    badge.textContent = 'Filter ACTIVE';
+                } else {
+                    badge.className = 'status-chip off';
+                    badge.textContent = 'Filter OFF';
+                    delete state.filters[col];
+                }
+            });
+        });
+    }
+
+    function getNearestStrikesHelper(strikesList, mid, count) {
+        if (!strikesList || strikesList.length === 0 || !mid || isNaN(mid) || mid <= 0) {
+            return { selected: [], selLower: [], equal: [], selHigher: [], min: null, max: null };
+        }
+        const c = isNaN(count) || count < 0 ? 20 : count;
+        const lower = strikesList.filter(s => s < mid);
+        const equal = strikesList.filter(s => s === mid);
+        const higher = strikesList.filter(s => s > mid);
+
+        const selLower = lower.slice(Math.max(0, lower.length - c));
+        const selHigher = higher.slice(0, c);
+        const selected = [...selLower, ...equal, ...selHigher];
+
+        return {
+            selected,
+            selLower,
+            equal,
+            selHigher,
+            min: selected.length ? selected[0] : null,
+            max: selected.length ? selected[selected.length - 1] : null
+        };
+    }
+
+    function formatStrikePreviewMsg(calc, mid, count) {
+        if (!mid || isNaN(mid) || mid <= 0) {
+            return 'Please enter a Mid Value (e.g. 22330 or 23300) to select nearest lower & higher strikes.';
+        }
+        if (!calc.selected || calc.selected.length === 0) {
+            return `No strikes found around Mid ${mid}.`;
+        }
+        const lowDesc = calc.selLower.length > 0 
+            ? `${calc.selLower.length} lower (${calc.selLower[0]} to ${calc.selLower[calc.selLower.length - 1]})` 
+            : '0 lower';
+        const highDesc = calc.selHigher.length > 0 
+            ? `${calc.selHigher.length} higher (${calc.selHigher[0]} to ${calc.selHigher[calc.selHigher.length - 1]})` 
+            : '0 higher';
+        const eqDesc = calc.equal.length > 0 ? `, center ${calc.equal[0]}` : '';
+
+        return `Selected <strong>${calc.selected.length} strikes</strong>: <strong>${calc.min}</strong> to <strong>${calc.max}</strong> (${lowDesc}${eqDesc}, and ${highDesc} around Mid ${mid})`;
+    }
+
+    function renderFilterControls(col, type, stats, safeId) {
+        if (type === 'date') {
+            const minD = stats.min || '';
+            const maxD = stats.max || '';
+            let pillsHtml = '';
+            if (stats.uniqueDates && stats.uniqueDates.length > 0) {
+                const topDates = stats.uniqueDates.slice(0, 20);
+                pillsHtml = `
+                    <div class="date-pills-box">
+                        <div style="font-size: 11.5px; font-weight: 700; color: var(--violet-900); margin-bottom: 8px; display:flex; align-items:center; gap:6px;">
+                            <span>⚡ Quick Select Available Dates in this File:</span>
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:500;">(Click any date to instantly select)</span>
+                        </div>
+                        <div class="date-pills-wrap" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            ${topDates.map(ud => `
+                                <button type="button" class="date-quick-pill date-pill-${safeId}" data-val="${escapeHtml(ud.raw)}" data-iso="${ud.iso || ''}" onclick="toggleDateQuickPill('${safeId}', this)">
+                                    <span>${escapeHtml(ud.raw)}</span>
+                                    <span class="pill-count">${ud.count}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            return `
+                <div class="filter-mode-pills">
+                    <label>
+                        <input type="radio" name="dateMode_${safeId}" value="single" checked onchange="toggleDateFilterMode('${safeId}', 'single')">
+                        Single Date / Search
+                    </label>
+                    <label>
+                        <input type="radio" name="dateMode_${safeId}" value="range" onchange="toggleDateFilterMode('${safeId}', 'range')">
+                        Date Range (From – To)
+                    </label>
+                    <label>
+                        <input type="radio" name="dateMode_${safeId}" value="start" onchange="toggleDateFilterMode('${safeId}', 'start')">
+                        Starting Date (From)
+                    </label>
+                    <label>
+                        <input type="radio" name="dateMode_${safeId}" value="end" onchange="toggleDateFilterMode('${safeId}', 'end')">
+                        Ending Date (Up To)
+                    </label>
+                </div>
+                <div id="dateInputSingle_${safeId}" class="date-single-container">
+                    <div class="inputs-row" style="gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+                        <div class="field-group">
+                            <span class="field-label" style="font-weight: 700; color: var(--violet-900);">Exact Date Picker:</span>
+                            <input type="date" class="glass-input" id="dateExact_${safeId}" ${minD ? `min="${minD}"` : ''} ${maxD ? `max="${maxD}"` : ''} onchange="onDateExactPickerChange('${safeId}')">
+                        </div>
+                        <div class="field-group">
+                            <span class="field-label" style="font-weight: 700; color: var(--violet-900);">Or Type Date (e.g. 9-11-2026 or 09/11/2026):</span>
+                            <input type="text" class="glass-input" id="dateText_${safeId}" placeholder="e.g. 9-11-2026 or 09/11/2026" style="width: 250px; font-weight:600; color:#1e1b4b;" oninput="onDateTextChange('${safeId}')">
+                        </div>
+                    </div>
+                    ${pillsHtml}
+                </div>
+                <div id="dateInputRange_${safeId}" class="inputs-row hidden">
+                    <div class="field-group">
+                        <span class="field-label">From:</span>
+                        <input type="date" class="glass-input" id="dateFrom_${safeId}" ${minD ? `min="${minD}"` : ''} ${maxD ? `max="${maxD}"` : ''}>
+                    </div>
+                    <div class="field-group">
+                        <span class="field-label">To:</span>
+                        <input type="date" class="glass-input" id="dateTo_${safeId}" ${minD ? `min="${minD}"` : ''} ${maxD ? `max="${maxD}"` : ''}>
+                    </div>
+                </div>
+                <div id="dateInputStart_${safeId}" class="inputs-row hidden">
+                    <div class="field-group">
+                        <span class="field-label">Starting From (On or after):</span>
+                        <input type="date" class="glass-input" id="dateStartOnly_${safeId}" ${minD ? `min="${minD}"` : ''} ${maxD ? `max="${maxD}"` : ''}>
+                    </div>
+                </div>
+                <div id="dateInputEnd_${safeId}" class="inputs-row hidden">
+                    <div class="field-group">
+                        <span class="field-label">Ending Date (On or before):</span>
+                        <input type="date" class="glass-input" id="dateEndOnly_${safeId}" ${minD ? `min="${minD}"` : ''} ${maxD ? `max="${maxD}"` : ''}>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (type === 'number') {
+            if (isStrikePriceColumn(col)) {
+                let defaultMid = 22330;
+                const validStrikes = [...new Set(state.rawData.map(r => Number(r[col])).filter(n => !isNaN(n) && n > 0))].sort((a,b)=>a-b);
+                if (validStrikes.length > 0) {
+                    defaultMid = validStrikes[Math.floor(validStrikes.length / 2)];
+                }
+                const defaultCount = 20;
+                const initialCalc = getNearestStrikesHelper(validStrikes, defaultMid, defaultCount);
+                const previewMsg = formatStrikePreviewMsg(initialCalc, defaultMid, defaultCount);
+
+                return `
+                    <div class="filter-mode-pills">
+                        <label>
+                            <input type="radio" name="strikeMode_${safeId}" value="midRange" checked onchange="toggleStrikeMode('${safeId}', 'midRange')">
+                            🎯 Mid Value + Nearest Strikes (e.g. 22330, nearest 20 below & 20 above)
+                        </label>
+                        <label>
+                            <input type="radio" name="strikeMode_${safeId}" value="minMax" onchange="toggleStrikeMode('${safeId}', 'minMax')">
+                            Custom Min / Max Bounds
+                        </label>
+                    </div>
+
+                    <div id="strikeMidRangeBox_${safeId}" class="strike-mid-box">
+                        <div class="inputs-row" style="align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+                            <div class="field-group">
+                                <span class="field-label" style="font-weight: 700; color: var(--violet-900);">Mid Value (Center Strike / Spot):</span>
+                                <input type="number" class="glass-input" id="strikeMid_${safeId}" value="${defaultMid}" placeholder="e.g. 22330 or 23300" style="width: 190px; font-weight:700; color:#1e1b4b;" oninput="updateStrikePreview('${safeId}', '${escapeHtml(col)}')">
+                            </div>
+                            <div class="field-group">
+                                <span class="field-label" style="font-weight: 700; color: var(--violet-900);">Range (Nearest Strikes Below & Above):</span>
+                                <input type="number" class="glass-input" id="strikeRange_${safeId}" value="20" placeholder="e.g. 20" style="width: 140px; font-weight:700; color:#1e1b4b;" oninput="updateStrikePreview('${safeId}', '${escapeHtml(col)}')">
+                            </div>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--violet-800); margin-top: 6px; font-weight: 500;">
+                            💡 Example: If Mid Value = <strong>22330</strong> and Range = <strong>20</strong>, it selects the <strong>20 nearest lower strikes</strong> (below 22330) and the <strong>20 nearest higher strikes</strong> (above 22330).
+                        </div>
+                        <div class="strike-calc-badge" id="strikeCalcPreview_${safeId}" style="margin-top: 10px;">
+                            <span>🎯</span>
+                            <span id="strikeCalcText_${safeId}">${previewMsg}</span>
+                        </div>
+                    </div>
+
+                    <div id="strikeMinMaxBox_${safeId}" class="inputs-row hidden" style="margin-top: 10px;">
+                        <div class="field-group">
+                            <span class="field-label">Min (>=):</span>
+                            <input type="number" class="glass-input" id="numMin_${safeId}" placeholder="${stats.min !== undefined ? stats.min : 'Min'}" style="width: 130px;">
+                        </div>
+                        <div class="field-group">
+                            <span class="field-label">Max (<=):</span>
+                            <input type="number" class="glass-input" id="numMax_${safeId}" placeholder="${stats.max !== undefined ? stats.max : 'Max'}" style="width: 130px;">
+                        </div>
+                        <span style="font-size:12px; color:var(--text-muted); font-weight:700;">— OR —</span>
+                        <div class="field-group">
+                            <span class="field-label">Exact (=):</span>
+                            <input type="number" class="glass-input" id="numExact_${safeId}" placeholder="Exact value" style="width: 130px;">
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="inputs-row">
+                    <div class="field-group">
+                        <span class="field-label">Min (>=):</span>
+                        <input type="number" class="glass-input" id="numMin_${safeId}" placeholder="${stats.min !== undefined ? stats.min : 'Min'}" style="width: 130px;">
+                    </div>
+                    <div class="field-group">
+                        <span class="field-label">Max (<=):</span>
+                        <input type="number" class="glass-input" id="numMax_${safeId}" placeholder="${stats.max !== undefined ? stats.max : 'Max'}" style="width: 130px;">
+                    </div>
+                    <span style="font-size:12px; color:var(--text-muted); font-weight:700;">— OR —</span>
+                    <div class="field-group">
+                        <span class="field-label">Exact (=):</span>
+                        <input type="number" class="glass-input" id="numExact_${safeId}" placeholder="Exact value" style="width: 130px;">
+                    </div>
+                </div>
+            `;
+        }
+
+        if (type === 'boolean') {
+            return `
+                <div class="inputs-row">
+                    <div class="field-group">
+                        <span class="field-label">Select Value:</span>
+                        <select class="glass-input" id="boolVal_${safeId}">
+                            <option value="">-- Any (No Filter) --</option>
+                            <option value="true">True / Yes</option>
+                            <option value="false">False / No</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Text type
+        const uniqueVals = [...new Set(state.rawData.map(r => String(r[col] || '').trim()))].filter(Boolean).sort();
+        let optionsHtml = '';
+        uniqueVals.forEach((v) => {
+            optionsHtml += `
+                <label class="checkbox-item" data-text="${escapeHtml(v.toLowerCase())}">
+                    <input type="checkbox" class="cb_${safeId}" value="${escapeHtml(v)}">
+                    <span>${escapeHtml(v)}</span>
+                </label>
+            `;
+        });
+
+        return `
+            <div class="inputs-row">
+                <div class="field-group">
+                    <span class="field-label">Contains:</span>
+                    <input type="text" class="glass-input" id="textContains_${safeId}" placeholder="Type search text..." style="width: 220px;">
+                </div>
+                <div class="field-group">
+                    <span class="field-label">Exact:</span>
+                    <input type="text" class="glass-input" id="textExact_${safeId}" placeholder="Exact text..." style="width: 180px;">
+                </div>
+            </div>
+            <div style="margin-top: 12px;">
+                <span class="field-label" style="display:block; margin-bottom: 6px;">Select specific values (${uniqueVals.length} unique):</span>
+                <div class="text-search-container">
+                    <input type="text" class="text-inner-search" placeholder="Type to filter values..." oninput="filterCheckboxList(this, '${safeId}')">
+                    <div style="padding: 6px 12px; background: var(--violet-50); border-bottom: 1px solid var(--violet-100); display:flex; gap:16px; font-size:12px; font-weight:700;">
+                        <a href="javascript:void(0)" onclick="selectAllCheckboxes('${safeId}', true)" style="color:var(--violet-700); text-decoration:none;">Select All</a>
+                        <a href="javascript:void(0)" onclick="selectAllCheckboxes('${safeId}', false)" style="color:var(--danger); text-decoration:none;">Clear All</a>
+                    </div>
+                    <div class="checkbox-options-scroll" id="optionList_${safeId}">
+                        ${optionsHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleDateFilterMode(safeId, mode) {
+        const rangeEl = document.getElementById(`dateInputRange_${safeId}`);
+        const singleEl = document.getElementById(`dateInputSingle_${safeId}`);
+        const startEl = document.getElementById(`dateInputStart_${safeId}`);
+        const endEl = document.getElementById(`dateInputEnd_${safeId}`);
+        if (rangeEl) rangeEl.classList.toggle('hidden', mode !== 'range');
+        if (singleEl) singleEl.classList.toggle('hidden', mode !== 'single');
+        if (startEl) startEl.classList.toggle('hidden', mode !== 'start');
+        if (endEl) endEl.classList.toggle('hidden', mode !== 'end');
+    }
+
+    function toggleDateQuickPill(safeId, btn) {
+        const wasActive = btn.classList.contains('active');
+        document.querySelectorAll(`.date-pill-${safeId}`).forEach(b => b.classList.remove('active'));
+        const textInput = document.getElementById(`dateText_${safeId}`);
+        const exactInput = document.getElementById(`dateExact_${safeId}`);
+
+        if (!wasActive) {
+            btn.classList.add('active');
+            const rawVal = btn.dataset.val;
+            const isoVal = btn.dataset.iso;
+            if (textInput) textInput.value = rawVal;
+            if (exactInput && isoVal) exactInput.value = isoVal;
+        } else {
+            if (textInput) textInput.value = '';
+            if (exactInput) exactInput.value = '';
+        }
+    }
+
+    function onDateTextChange(safeId) {
+        const textInput = document.getElementById(`dateText_${safeId}`);
+        const val = (textInput?.value || '').trim();
+        const exactInput = document.getElementById(`dateExact_${safeId}`);
+        if (!val) {
+            document.querySelectorAll(`.date-pill-${safeId}`).forEach(b => b.classList.remove('active'));
+            return;
+        }
+        const iso = parseAnyDate(val);
+        if (iso && exactInput) {
+            exactInput.value = iso;
+        }
+        document.querySelectorAll(`.date-pill-${safeId}`).forEach(b => {
+            const bVal = b.dataset.val || '';
+            const bIso = b.dataset.iso || '';
+            const isMatch = bVal.toLowerCase().includes(val.toLowerCase()) || (iso && bIso === iso);
+            b.classList.toggle('active', isMatch);
+        });
+    }
+
+    function onDateExactPickerChange(safeId) {
+        const exactInput = document.getElementById(`dateExact_${safeId}`);
+        const isoVal = exactInput?.value;
+        if (!isoVal) return;
+        document.querySelectorAll(`.date-pill-${safeId}`).forEach(b => {
+            b.classList.toggle('active', b.dataset.iso === isoVal);
+        });
+    }
+
+    function toggleStrikeMode(safeId, mode) {
+        const midBox = document.getElementById(`strikeMidRangeBox_${safeId}`);
+        const minMaxBox = document.getElementById(`strikeMinMaxBox_${safeId}`);
+        if (midBox) midBox.classList.toggle('hidden', mode !== 'midRange');
+        if (minMaxBox) minMaxBox.classList.toggle('hidden', mode !== 'minMax');
+    }
+
+    function updateStrikePreview(safeId, col) {
+        const midInput = document.getElementById(`strikeMid_${safeId}`);
+        const rangeInput = document.getElementById(`strikeRange_${safeId}`);
+        const previewText = document.getElementById(`strikeCalcText_${safeId}`);
+        if (!midInput || !rangeInput || !previewText) return;
+
+        const mid = parseFloat(midInput.value);
+        const count = parseInt(rangeInput.value, 10);
+        const validStrikes = [...new Set(
+            state.rawData.map(r => Number(r[col])).filter(n => !isNaN(n) && n > 0)
+        )].sort((a,b)=>a-b);
+
+        const calc = getNearestStrikesHelper(validStrikes, mid, isNaN(count) ? 20 : count);
+        previewText.innerHTML = formatStrikePreviewMsg(calc, mid, isNaN(count) ? 20 : count);
+    }
+
+    function selectAllCheckboxes(safeId, check) {
+        document.querySelectorAll(`.cb_${safeId}`).forEach(cb => {
+            if (cb.closest('.checkbox-item').style.display !== 'none') {
+                cb.checked = check;
+            }
+        });
+    }
+
+    function filterCheckboxList(searchInput, safeId) {
+        const query = searchInput.value.toLowerCase().trim();
+        const items = document.querySelectorAll(`#optionList_${safeId} .checkbox-item`);
+        items.forEach(item => {
+            const txt = item.dataset.text;
+            item.style.display = txt.includes(query) ? 'flex' : 'none';
+        });
+    }
+
+    function resetAllFilters() {
+        document.querySelectorAll('.ios-toggle.active').forEach(toggle => toggle.click());
+    }
+
+    // ===== APPLY FILTERS =====
+    function applyFilters() {
+        state.filters = {};
+
+        document.querySelectorAll('.ios-toggle.active').forEach(toggle => {
+            const col = toggle.dataset.col;
+            const type = state.columnTypes[col];
+            const safeId = col.replace(/[^a-zA-Z0-9_]/g, '_');
+            const filterObj = { type };
+
+            if (type === 'date') {
+                const mode = document.querySelector(`input[name="dateMode_${safeId}"]:checked`)?.value || 'single';
+                filterObj.mode = mode;
+
+                const textVal = document.getElementById(`dateText_${safeId}`)?.value.trim();
+                if (textVal) filterObj.textContains = textVal;
+
+                const activePills = [...document.querySelectorAll(`.date-pill-${safeId}.active`)].map(p => p.dataset.val);
+                if (activePills.length > 0) filterObj.selectedDates = activePills;
+
+                if (mode === 'range') {
+                    const from = document.getElementById(`dateFrom_${safeId}`)?.value;
+                    const to = document.getElementById(`dateTo_${safeId}`)?.value;
+                    if (from) filterObj.from = from;
+                    if (to) filterObj.to = to;
+                } else if (mode === 'single') {
+                    const exact = document.getElementById(`dateExact_${safeId}`)?.value;
+                    if (exact) filterObj.exact = exact;
+                } else if (mode === 'start') {
+                    const start = document.getElementById(`dateStartOnly_${safeId}`)?.value;
+                    if (start) filterObj.from = start;
+                } else if (mode === 'end') {
+                    const end = document.getElementById(`dateEndOnly_${safeId}`)?.value;
+                    if (end) filterObj.to = end;
+                }
+            } else if (type === 'number') {
+                if (isStrikePriceColumn(col)) {
+                    const strikeMode = document.querySelector(`input[name="strikeMode_${safeId}"]:checked`)?.value || 'midRange';
+                    filterObj.strikeMode = strikeMode;
+                    if (strikeMode === 'midRange') {
+                        const mid = parseFloat(document.getElementById(`strikeMid_${safeId}`).value);
+                        const count = parseInt(document.getElementById(`strikeRange_${safeId}`).value, 10);
+                        if (!isNaN(mid) && mid > 0) {
+                            const c = isNaN(count) || count < 0 ? 20 : count;
+                            const validStrikes = [...new Set(
+                                state.rawData.map(r => Number(r[col])).filter(n => !isNaN(n) && n > 0)
+                            )].sort((a,b)=>a-b);
+
+                            const calc = getNearestStrikesHelper(validStrikes, mid, c);
+                            filterObj.strikeMode = 'midRange';
+                            filterObj.mid = mid;
+                            filterObj.count = c;
+                            filterObj.selectedStrikes = new Set(calc.selected);
+                            filterObj.min = calc.min;
+                            filterObj.max = calc.max;
+
+                            state.niftyPrice = mid;
+                            state.atmStrike = calc.equal.length > 0 ? calc.equal[0] : (calc.selected.length > 0 ? calc.selected.reduce((prev, curr) => Math.abs(curr - mid) < Math.abs(prev - mid) ? curr : prev) : mid);
+                            const niftyInput = document.getElementById('niftyPrice');
+                            if (niftyInput) niftyInput.value = mid;
+                            const numStrikesInput = document.getElementById('numStrikes');
+                            if (numStrikesInput) numStrikesInput.value = c;
+                        }
+                    } else {
+                        const exact = document.getElementById(`numExact_${safeId}`).value;
+                        const min = document.getElementById(`numMin_${safeId}`).value;
+                        const max = document.getElementById(`numMax_${safeId}`).value;
+                        if (exact !== '') filterObj.exact = Number(exact);
+                        else {
+                            if (min !== '') filterObj.min = Number(min);
+                            if (max !== '') filterObj.max = Number(max);
+                        }
+                    }
+                } else {
+                    const exact = document.getElementById(`numExact_${safeId}`).value;
+                    const min = document.getElementById(`numMin_${safeId}`).value;
+                    const max = document.getElementById(`numMax_${safeId}`).value;
+                    if (exact !== '') filterObj.exact = Number(exact);
+                    else {
+                        if (min !== '') filterObj.min = Number(min);
+                        if (max !== '') filterObj.max = Number(max);
+                    }
+                }
+            } else if (type === 'boolean') {
+                const bVal = document.getElementById(`boolVal_${safeId}`).value;
+                if (bVal !== '') filterObj.value = bVal === 'true';
+            } else {
+                const contains = document.getElementById(`textContains_${safeId}`).value.trim();
+                const exact = document.getElementById(`textExact_${safeId}`).value.trim();
+                const checked = [...document.querySelectorAll(`.cb_${safeId}:checked`)].map(cb => cb.value);
+
+                if (contains) filterObj.contains = contains;
+                if (exact) filterObj.exact = exact;
+                if (checked.length > 0) filterObj.values = checked;
+            }
+
+            state.filters[col] = filterObj;
+        });
+
+        // Filter data rows
+        state.filteredData = state.rawData.filter(row => {
+            for (const [col, f] of Object.entries(state.filters)) {
+                const rawVal = row[col];
+                if (f.type === 'date') {
+                    const rawStr = String(rawVal || '').trim().replace(/^["']|["']$/g, '');
+                    const dStr = parseAnyDate(rawVal);
+
+                    // 1. Quick date pill selection
+                    if (f.selectedDates && f.selectedDates.length > 0) {
+                        const pillMatch = f.selectedDates.some(pillVal => {
+                            if (rawStr === pillVal) return true;
+                            if (dStr && parseAnyDate(pillVal) === dStr) return true;
+                            return false;
+                        });
+                        if (!pillMatch) return false;
+                    }
+
+                    // 2. Free text search (e.g. 9-11-2026 or 09/11/2026)
+                    if (f.textContains) {
+                        const needle = f.textContains.toLowerCase().replace(/[\/\.]/g, '-').trim();
+                        const cleanRaw = rawStr.toLowerCase().replace(/[\/\.]/g, '-');
+                        let textMatch = cleanRaw.includes(needle);
+
+                        if (!textMatch && dStr) {
+                            const cleanIso = dStr.replace(/[\/\.]/g, '-');
+                            if (cleanIso.includes(needle)) textMatch = true;
+                        }
+
+                        if (!textMatch) {
+                            const parts = needle.split('-');
+                            if (parts.length === 3) {
+                                const padNeedle = `${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[2]}`;
+                                const numNeedle = `${parseInt(parts[0])}-${parseInt(parts[1])}-${parts[2]}`;
+                                if (cleanRaw.includes(padNeedle) || cleanRaw.includes(numNeedle)) textMatch = true;
+                                if (dStr) {
+                                    const parsedNeedle = parseAnyDate(needle);
+                                    if (parsedNeedle && parsedNeedle === dStr) textMatch = true;
+                                }
+                            }
+                        }
+                        if (!textMatch) return false;
+                    }
+
+                    // 3. Exact date picker
+                    if (f.exact) {
+                        let isExactMatch = false;
+                        if (dStr && dStr === f.exact) isExactMatch = true;
+
+                        // Check browser locale swap (YYYY-MM-DD vs YYYY-DD-MM)
+                        if (!isExactMatch && f.exact.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            const p = f.exact.split('-');
+                            const swapped = `${p[0]}-${p[2]}-${p[1]}`;
+                            if (dStr && dStr === swapped) isExactMatch = true;
+                        }
+
+                        // Also match raw string representation against exact date parts
+                        if (!isExactMatch) {
+                            const cleanRaw = rawStr.replace(/[\/\.]/g, '-');
+                            const p = f.exact.split('-');
+                            if (p.length === 3) {
+                                const y = p[0], m = p[1], d = p[2];
+                                const dmy1 = `${d}-${m}-${y}`;
+                                const dmy2 = `${parseInt(d)}-${parseInt(m)}-${y}`;
+                                const mdy1 = `${m}-${d}-${y}`;
+                                if (cleanRaw.includes(dmy1) || cleanRaw.includes(dmy2) || cleanRaw.includes(mdy1)) {
+                                    isExactMatch = true;
+                                }
+                            }
+                        }
+                        if (!isExactMatch) return false;
+                    }
+
+                    // 4. Range bounds
+                    if (f.from && (!dStr || dStr < f.from)) return false;
+                    if (f.to && (!dStr || dStr > f.to)) return false;
+                } else if (f.type === 'number') {
+                    const num = Number(rawVal);
+                    if (isNaN(num)) return false;
+                    if (f.strikeMode === 'midRange' && f.selectedStrikes && f.selectedStrikes.size > 0) {
+                        if (!f.selectedStrikes.has(num)) return false;
+                    } else {
+                        if (f.exact !== undefined && num !== f.exact) return false;
+                        if (f.min !== undefined && num < f.min) return false;
+                        if (f.max !== undefined && num > f.max) return false;
+                    }
+                } else if (f.type === 'boolean') {
+                    if (f.value !== undefined && Boolean(rawVal) !== f.value) return false;
+                } else {
+                    const s = String(rawVal || '').trim();
+                    if (f.contains && !s.toLowerCase().includes(f.contains.toLowerCase())) return false;
+                    if (f.exact && s.toLowerCase() !== f.exact.toLowerCase()) return false;
+                    if (f.values && f.values.length > 0 && !f.values.includes(s)) return false;
+                }
+            }
+            return true;
+        });
+
+        if (state.filteredData.length === 0) {
+            alert('Filters resulted in 0 rows! Please adjust your filter criteria.');
+            return;
+        }
+
+        autoDetectOptionParameters();
+        buildFilteredPreviewUI();
+        prepareOutputData();
+        goToStep(3);
+    }
+
+    function autoDetectOptionParameters() {
+        const strPriceCol = findHeader('STR_PRICE');
+        const strikes = state.filteredData.map(r => Number(r[strPriceCol])).filter(s => !isNaN(s) && s > 0).sort((a,b)=>a-b);
+        if (strikes.length > 1) {
+            const uniqueStrikes = [...new Set(strikes)];
+            let diffs = [];
+            for (let i = 1; i < uniqueStrikes.length; i++) {
+                diffs.push(uniqueStrikes[i] - uniqueStrikes[i-1]);
+            }
+            const minDiff = Math.min(...diffs);
+            if (minDiff > 0 && minDiff <= 500) {
+                state.gap = minDiff;
+                document.getElementById('strikePriceGap').value = minDiff;
+            }
+        }
+
+        let spot = 24000;
+        const strikeFilter = strPriceCol ? state.filters[strPriceCol] : null;
+        if (strikeFilter && strikeFilter.mid !== undefined && !isNaN(strikeFilter.mid)) {
+            spot = strikeFilter.mid;
+        } else if (strikes.length > 0) {
+            spot = strikes[Math.floor(strikes.length / 2)];
+        }
+        state.niftyPrice = spot;
+        document.getElementById('niftyPrice').value = spot;
+    }
+
+    // ===== PREVIEWS & CONFIGURATION =====
+    function buildFilteredPreviewUI() {
+        const container = document.getElementById('filteredPreview');
+        const statsBar = document.getElementById('statsBar');
+
+        const optTypeCol = findHeader('OPT_TYPE');
+        const strPriceCol = findHeader('STR_PRICE');
+
+        const ceCount = state.filteredData.filter(r => String(r[optTypeCol] || '').toUpperCase().includes('CE')).length;
+        const peCount = state.filteredData.filter(r => String(r[optTypeCol] || '').toUpperCase().includes('PE')).length;
+        const uniqueStrikes = new Set(state.filteredData.map(r => r[strPriceCol])).size;
+
+        statsBar.innerHTML = `
+            <div class="glass-stat-chip">
+                <span>📊</span> <span>Filtered Rows: <strong>${state.filteredData.length}</strong></span>
+            </div>
+            <div class="glass-stat-chip badge-ce">
+                <span>📈</span> <span>CE Count: <strong>${ceCount}</strong></span>
+            </div>
+            <div class="glass-stat-chip badge-pe">
+                <span>📉</span> <span>PE Count: <strong>${peCount}</strong></span>
+            </div>
+            <div class="glass-stat-chip">
+                <span>🎯</span> <span>Unique Strikes: <strong>${uniqueStrikes}</strong></span>
+            </div>
+        `;
+
+        const reqCols = ['Identifier', 'STR_PRICE', 'OPT_TYPE', 'OPEN', 'HIGH', 'LOW', 'CLOSE'];
+        const displayCols = (state.selectedColumns && state.selectedColumns.length > 0)
+            ? state.selectedColumns
+            : reqCols.map(rc => findHeader(rc)).filter(Boolean);
+
+        let tableHtml = '<table><thead><tr><th>#</th>';
+        displayCols.forEach(col => tableHtml += `<th>${escapeHtml(col)}</th>`);
+        tableHtml += '</tr></thead><tbody>';
+
+        const slice = state.filteredData.slice(0, 100);
+        slice.forEach((row, i) => {
+            tableHtml += '<tr>';
+            tableHtml += `<td>${i + 1}</td>`;
+            displayCols.forEach(col => {
+                let v = row[col];
+                if (v instanceof Date) v = v.toLocaleDateString();
+                tableHtml += `<td>${escapeHtml(String(v !== undefined ? v : ''))}</td>`;
+            });
+            tableHtml += '</tr>';
+        });
+
+        if (state.filteredData.length > 100) {
+            tableHtml += `<tr><td colspan="${displayCols.length + 1}" style="text-align:center; color:var(--text-muted); font-style:italic;">
+                ... and ${state.filteredData.length - 100} more filtered rows
+            </td></tr>`;
+        }
+        tableHtml += '</tbody></table>';
+        container.innerHTML = tableHtml;
+    }
+
+    function switchPreviewTab(tab) {
+        document.getElementById('tabFilteredBtn').classList.toggle('active', tab === 'filtered');
+        document.getElementById('tabOutputBtn').classList.toggle('active', tab === 'output');
+        document.getElementById('filteredDataTab').classList.toggle('hidden', tab !== 'filtered');
+        document.getElementById('outputTab').classList.toggle('hidden', tab !== 'output');
+        if (tab === 'output') {
+            prepareOutputData();
+            renderOutputPreviewTable();
+        }
+    }
+
+    function toggleSheet2StrikeMode(mode) {
+        state.sheet2StrikeMode = mode;
+        const lblFiltered = document.getElementById('lblModeFiltered');
+        const lblGrid = document.getElementById('lblModeGrid');
+        const explainer = document.getElementById('strikesModeExplainer');
+        
+        if (mode === 'filteredOnly') {
+            if (lblFiltered) { lblFiltered.style.background = '#fef08a'; lblFiltered.style.color = '#1e1b4b'; }
+            if (lblGrid) { lblGrid.style.background = 'transparent'; lblGrid.style.color = 'white'; }
+            if (explainer) explainer.textContent = '✨ Sheet2 will only contain strikes matching your filter.';
+        } else {
+            if (lblFiltered) { lblFiltered.style.background = 'transparent'; lblFiltered.style.color = 'white'; }
+            if (lblGrid) { lblGrid.style.background = '#fef08a'; lblGrid.style.color = '#1e1b4b'; }
+            if (explainer) explainer.textContent = '📐 Sheet2 will contain fixed radiating strikes around ATM.';
+        }
+        onConfigChange();
+    }
+
+    function onConfigChange() {
+        prepareOutputData();
+        if (document.getElementById('tabOutputBtn').classList.contains('active')) {
+            renderOutputPreviewTable();
+        }
+    }
+
+    function prepareOutputData() {
+        const gap = Number(document.getElementById('strikePriceGap').value) || 50;
+        const numStrikes = Number(document.getElementById('numStrikes').value) || 14;
+        let nifty = Number(document.getElementById('niftyPrice').value) || state.niftyPrice;
+
+        state.gap = gap;
+        state.niftyPrice = nifty;
+
+        const strCol = findHeader('STR_PRICE');
+        const optCol = findHeader('OPT_TYPE');
+        const openCol = findHeader('OPEN');
+        const highCol = findHeader('HIGH');
+        const lowCol = findHeader('LOW');
+        const closeCol = findHeader('CLOSE');
+
+        state.outputLookup = {};
+        state.filteredData.forEach(r => {
+            const strike = Number(r[strCol]);
+            const opt = String(r[optCol] || '').trim().toUpperCase();
+            if (isNaN(strike)) return;
+
+            const type = opt.includes('CE') ? 'CE' : opt.includes('PE') ? 'PE' : null;
+            if (!type) return;
+
+            if (!state.outputLookup[strike]) state.outputLookup[strike] = {};
+            state.outputLookup[strike][type] = {
+                open: Number(r[openCol]) || 0,
+                high: Number(r[highCol]) || 0,
+                low: Number(r[lowCol]) || 0,
+                close: Number(r[closeCol]) || 0,
+            };
+        });
+
+        const uniqueFilteredStrikes = [...new Set(state.filteredData.map(r => Number(r[strCol])))]
+            .filter(s => !isNaN(s) && s > 0)
+            .sort((a, b) => a - b);
+
+        const modeRadio = document.querySelector('input[name="sheet2StrikeMode"]:checked');
+        const currentMode = modeRadio ? modeRadio.value : state.sheet2StrikeMode || 'filteredOnly';
+
+        const strikeCountEl = document.getElementById('sheet2FilteredStrikesCountText');
+        if (strikeCountEl) {
+            strikeCountEl.textContent = `🎯 Filtered Strikes Only (${uniqueFilteredStrikes.length} strikes)`;
+        }
+
+        if (currentMode === 'filteredOnly' || (uniqueFilteredStrikes.length > 0 && uniqueFilteredStrikes.length <= 100)) {
+            state.outputStrikes = uniqueFilteredStrikes;
+        } else {
+            const baseAtm = Math.round(nifty / gap) * gap;
+            state.outputStrikes = [];
+            for (let i = -numStrikes; i <= numStrikes; i++) {
+                state.outputStrikes.push(baseAtm + i * gap);
+            }
+        }
+
+        // Determine ATM strike (closest to niftyPrice in outputStrikes)
+        if (state.outputStrikes.length > 0) {
+            let closest = state.outputStrikes[0];
+            let minDiff = Math.abs(closest - nifty);
+            for (const s of state.outputStrikes) {
+                const diff = Math.abs(s - nifty);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = s;
+                }
+            }
+            state.atmStrike = closest;
+        } else {
+            state.atmStrike = Math.round(nifty / gap) * gap;
+        }
+    }
+
+    function renderOutputPreviewTable() {
+        const container = document.getElementById('outputPreview');
+        let html = '<table><thead><tr>';
+        html += '<th>Col B (CE ID)</th><th>Col D (PREMIUM)</th><th>Col E (AVG)</th><th>Col F (CE CLOSE)</th>';
+        html += '<th>Col G (STRIKE)</th>';
+        html += '<th>Col H (PE CLOSE)</th><th>Col I (AVG)</th><th>Col J (PREMIUM)</th>';
+        html += '<th>Col R (PE ID)</th>';
+        html += '<th>Col T (call low)</th><th>Col U (put hig)</th><th>Col V (T+U)/2</th>';
+        html += '<th>Col X (put low)</th><th>Col Y (call hig)</th><th>Col Z (X+Y)/2</th>';
+        html += '</tr></thead><tbody>';
+
+        state.outputStrikes.forEach(strike => {
+            const ce = state.outputLookup[strike]?.CE || { close: 0, low: 0, high: 0 };
+            const pe = state.outputLookup[strike]?.PE || { close: 0, low: 0, high: 0 };
+
+            const isATM = strike === state.atmStrike;
+            const avg = (ce.close + pe.close) / 2;
+            const premV = (ce.low + pe.high) / 2;
+            const premZ = (pe.low + ce.high) / 2;
+
+            html += `<tr class="${isATM ? 'atm-glow-row' : ''}">`;
+            html += `<td><span class="type-badge type-number">${strike}CE</span></td>`;
+            html += `<td>${premV.toFixed(2)}</td>`;
+            html += `<td>${avg.toFixed(2)}</td>`;
+            html += `<td><strong>${ce.close}</strong></td>`;
+            html += `<td><strong>${strike}</strong>${isATM ? ' (ATM)' : ''}</td>`;
+            html += `<td><strong>${pe.close}</strong></td>`;
+            html += `<td>${avg.toFixed(2)}</td>`;
+            html += `<td>${premZ.toFixed(2)}</td>`;
+            html += `<td><span class="type-badge type-text">${strike}PE</span></td>`;
+            html += `<td>${ce.low}</td>`;
+            html += `<td>${pe.high}</td>`;
+            html += `<td>${premV.toFixed(2)}</td>`;
+            html += `<td>${pe.low}</td>`;
+            html += `<td>${ce.high}</td>`;
+            html += `<td>${premZ.toFixed(2)}</td>`;
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function proceedToDownload() {
+        prepareOutputData();
+        renderFinalSummary();
+        renderFinalPreview();
+        goToStep(4);
+    }
+
+    function renderFinalSummary() {
+        const container = document.getElementById('finalSummaryStats');
+        const matched = state.outputStrikes.filter(s => state.outputLookup[s]?.CE || state.outputLookup[s]?.PE).length;
+
+        container.innerHTML = `
+            <div class="stats-chips-row">
+                <div class="glass-stat-chip" style="background:#f0fdf4; color:#15803d; border-color:#bbf7d0;">
+                    <span>✅</span> <span>Generated <strong>${state.outputStrikes.length}</strong> Output Strike Rows</span>
+                </div>
+                <div class="glass-stat-chip" style="background:#f5f3ff; color:#6d28d9; border-color:#ddd6fe;">
+                    <span>📈</span> <span>Strikes with Market Data: <strong>${matched} / ${state.outputStrikes.length}</strong></span>
+                </div>
+                <div class="glass-stat-chip" style="background:#fffbeb; color:#b45309; border-color:#fde68a;">
+                    <span>🎯</span> <span>ATM Strike: <strong>${state.atmStrike}</strong></span>
+                </div>
+                <div class="glass-stat-chip">
+                    <span>⚡</span> <span>Spot Reference: <strong>${state.niftyPrice}</strong></span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderFinalPreview() {
+        const container = document.getElementById('finalPreviewTable');
+        let html = '<table><thead>';
+        html += '<tr style="background:#ede9fe; font-size:12px;">';
+        html += '<th>Row #</th><th>B</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>R</th><th>T</th><th>U</th><th>V</th><th>X</th><th>Y</th><th>Z</th>';
+        html += '</tr>';
+        html += '<tr style="background:#faf5ff; font-weight:800;">';
+        html += '<th></th><th>CE Identifier</th><th>PREMIUM</th><th>AVG</th><th>CLOSE</th><th>STRIKE</th><th>CLOSE</th><th>AVG</th><th>PREMIUM</th><th>PE Identifier</th><th>call low</th><th>put hig</th><th>(T+U)/2</th><th>put low</th><th>call hig</th><th>(X+Y)/2</th>';
+        html += '</tr></thead><tbody>';
+
+        state.outputStrikes.forEach((strike, i) => {
+            const rowNum = i + 4;
+            const ce = state.outputLookup[strike]?.CE || { close: 0, low: 0, high: 0 };
+            const pe = state.outputLookup[strike]?.PE || { close: 0, low: 0, high: 0 };
+            const isATM = strike === state.atmStrike;
+
+            html += `<tr class="${isATM ? 'atm-glow-row' : ''}">`;
+            html += `<td>${rowNum}</td>`;
+            html += `<td><code>=CONCATENATE(G${rowNum},"CE")</code> (${strike}CE)</td>`;
+            html += `<td><code>=V${rowNum}</code></td>`;
+            html += `<td><code>=(F${rowNum}+H${rowNum})/2</code></td>`;
+            html += `<td><strong>${ce.close}</strong></td>`;
+            html += `<td><strong>${strike}</strong>${isATM ? ' <span style="font-size:11px; background:#fde68a; color:#92400e; padding:2px 8px; border-radius:9999px; font-weight:800;">ATM</span>' : ''}</td>`;
+            html += `<td><strong>${pe.close}</strong></td>`;
+            html += `<td><code>=(F${rowNum}+H${rowNum})/2</code></td>`;
+            html += `<td><code>=Z${rowNum}</code></td>`;
+            html += `<td><code>=CONCATENATE(G${rowNum},"PE")</code> (${strike}PE)</td>`;
+            html += `<td>${ce.low}</td>`;
+            html += `<td>${pe.high}</td>`;
+            html += `<td><code>=(T${rowNum}+U${rowNum})/2</code></td>`;
+            html += `<td>${pe.low}</td>`;
+            html += `<td>${ce.high}</td>`;
+            html += `<td><code>=(X${rowNum}+Y${rowNum})/2</code></td>`;
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // ===== EXCEL EXPORT (SHEET2 + DATA) =====
+    function downloadExcelFile() {
+        const wb = XLSX.utils.book_new();
+
+        // 1. BUILD SHEET2
+        const sheet2Aoa = [[], []]; // Rows 1 & 2 empty
+
+        // Row 3: Headers
+        const r3 = new Array(26).fill('');
+        r3[3] = 'PREMIUM';   // Col D
+        r3[4] = 'AVG';       // Col E
+        r3[5] = 'CLOSE';     // Col F
+        r3[6] = 'STRIKE';    // Col G
+        r3[7] = 'CLOSE';     // Col H
+        r3[8] = 'AVG';       // Col I
+        r3[9] = 'PREMIUM';   // Col J
+        r3[19] = 'call low'; // Col T
+        r3[20] = 'put hig';  // Col U
+        r3[23] = 'put low';  // Col X
+        r3[24] = 'call hig'; // Col Y
+        sheet2Aoa.push(r3);
+
+        // Data rows placeholder
+        state.outputStrikes.forEach((strike) => {
+            const r = new Array(26).fill('');
+            const ce = state.outputLookup[strike]?.CE || { close: 0, low: 0, high: 0 };
+            const pe = state.outputLookup[strike]?.PE || { close: 0, low: 0, high: 0 };
+
+            r[5] = ce.close;      // F: CE close
+            r[6] = strike;        // G: Strike value
+            r[7] = pe.close;      // H: PE close
+            r[19] = ce.low;       // T: CE low
+            r[20] = pe.high;      // U: PE high
+            r[23] = pe.low;       // X: PE low
+            r[24] = ce.high;      // Y: CE high
+
+            sheet2Aoa.push(r);
+        });
+
+        const wsSheet2 = XLSX.utils.aoa_to_sheet(sheet2Aoa);
+
+        // Inject formulas, pre-computed values, and ATM yellow styling
+        const atmIndex = state.outputStrikes.indexOf(state.atmStrike);
+        const atmYellowStyle = {
+            fill: {
+                patternType: "solid",
+                fgColor: { rgb: "FEF3C7" }, // Soft warm yellow #fef3c7 matching preview
+                bgColor: { rgb: "FEF3C7" }
+            },
+            font: {
+                name: "Calibri",
+                sz: 11,
+                bold: true,
+                color: { rgb: "92400E" }
+            },
+            alignment: {
+                vertical: "center"
+            }
+        };
+
+        state.outputStrikes.forEach((strike, i) => {
+            const rowNum = i + 4;
+            const r = i + 3;
+
+            const ce = state.outputLookup[strike]?.CE || { close: 0, low: 0, high: 0 };
+            const pe = state.outputLookup[strike]?.PE || { close: 0, low: 0, high: 0 };
+
+            const avg = (ce.close + pe.close) / 2;
+            const premV = (ce.low + pe.high) / 2;
+            const premZ = (pe.low + ce.high) / 2;
+
+            // Col B: =CONCATENATE(G4,"CE")
+            wsSheet2[XLSX.utils.encode_cell({r: r, c: 1})] = {
+                t: 's', v: `${strike}CE`, f: `CONCATENATE(G${rowNum},"CE")`
+            };
+
+            // Col R: =CONCATENATE(G4,"PE")
+            wsSheet2[XLSX.utils.encode_cell({r: r, c: 17})] = {
+                t: 's', v: `${strike}PE`, f: `CONCATENATE(G${rowNum},"PE")`
+            };
+
+            // Col D: =V4
+            wsSheet2[XLSX.utils.encode_cell({r: r, c: 3})] = {
+                t: 'n', v: premV, f: `V${rowNum}`
+            };
+
+            // Col E: =(F4+H4)/2
+            wsSheet2[XLSX.utils.encode_cell({r: r, c: 4})] = {
+                t: 'n', v: avg, f: `(F${rowNum}+H${rowNum})/2`
+            };
+
+            // Col I: =(F4+H4)/2
+            wsSheet2[XLSX.utils.encode_cell({r: r, c: 8})] = {
+                t: 'n', v: avg, f: `(F${rowNum}+H${rowNum})/2`
+            };
+
+            // Col J: =Z4
+            wsSheet2[XLSX.utils.encode_cell({r: r, c: 9})] = {
+                t: 'n', v: premZ, f: `Z${rowNum}`
+            };
+
+            // Col V: =(T4+U4)/2
+            wsSheet2[XLSX.utils.encode_cell({r: r, c: 21})] = {
+                t: 'n', v: premV, f: `(T${rowNum}+U${rowNum})/2`
+            };
+
+            // Col Z: =(X4+Y4)/2
+            wsSheet2[XLSX.utils.encode_cell({r: r, c: 25})] = {
+                t: 'n', v: premZ, f: `(X${rowNum}+Y${rowNum})/2`
+            };
+
+            // Col G (STRIKE formula radiating from ATM)
+            if (atmIndex >= 0) {
+                if (i === atmIndex) {
+                    wsSheet2[XLSX.utils.encode_cell({r: r, c: 6})] = {
+                        t: 'n', v: strike, f: `ROUND(DATA!V4/DATA!Y5,0)*DATA!Y5`
+                    };
+                } else if (i < atmIndex) {
+                    const nextRow = rowNum + 1;
+                    const nextStrike = state.outputStrikes[i + 1];
+                    const diff = nextStrike - strike;
+                    const fStr = (diff === state.gap) ? `G${nextRow}-DATA!$Y$5` : `G${nextRow}-${diff}`;
+                    wsSheet2[XLSX.utils.encode_cell({r: r, c: 6})] = {
+                        t: 'n', v: strike, f: fStr
+                    };
+                } else {
+                    const prevRow = rowNum - 1;
+                    const prevStrike = state.outputStrikes[i - 1];
+                    const diff = strike - prevStrike;
+                    const fStr = (diff === state.gap) ? `G${prevRow}+DATA!$Y$5` : `G${prevRow}+${diff}`;
+                    wsSheet2[XLSX.utils.encode_cell({r: r, c: 6})] = {
+                        t: 'n', v: strike, f: fStr
+                    };
+                }
+            }
+
+            // Apply yellow highlight across all columns A to Z if this is the ATM row
+            if (i === atmIndex) {
+                for (let c = 0; c < 26; c++) {
+                    const cellKey = XLSX.utils.encode_cell({ r: r, c: c });
+                    if (!wsSheet2[cellKey]) {
+                        wsSheet2[cellKey] = { t: 's', v: '' };
+                    }
+                    wsSheet2[cellKey].s = atmYellowStyle;
+                }
+            }
+        });
+
+        wsSheet2['!cols'] = [
+            { wch: 3 },  // A
+            { wch: 14 }, // B
+            { wch: 3 },  // C
+            { wch: 13 }, // D
+            { wch: 13 }, // E
+            { wch: 13 }, // F
+            { wch: 12 }, // G
+            { wch: 13 }, // H
+            { wch: 13 }, // I
+            { wch: 13 }, // J
+            { wch: 3 },  // K
+            { wch: 3 },  // L
+            { wch: 3 },  // M
+            { wch: 3 },  // N
+            { wch: 3 },  // O
+            { wch: 3 },  // P
+            { wch: 3 },  // Q
+            { wch: 14 }, // R
+            { wch: 3 },  // S
+            { wch: 13 }, // T
+            { wch: 13 }, // U
+            { wch: 13 }, // V
+            { wch: 3 },  // W
+            { wch: 13 }, // X
+            { wch: 13 }, // Y
+            { wch: 13 }, // Z
+        ];
+
+        wsSheet2['!ref'] = XLSX.utils.encode_range({
+            s: { r: 0, c: 0 },
+            e: { r: state.outputStrikes.length + 2, c: 25 }
+        });
+
+        // 2. BUILD DATA SHEET
+        const dataAoa = [[], []];
+
+        const colsToExport = (state.selectedColumns && state.selectedColumns.length > 0)
+            ? state.selectedColumns
+            : state.headers;
+
+        const maxCols = Math.max(colsToExport.length, 26);
+        const dataR3 = new Array(maxCols).fill('');
+        colsToExport.forEach((colName, cIdx) => {
+            dataR3[cIdx] = colName;
+        });
+
+        dataR3[21] = 'NIFTY';
+        dataR3[22] = state.niftyPrice;
+        dataAoa.push(dataR3);
+
+        state.filteredData.forEach(row => {
+            const r = new Array(maxCols).fill('');
+            colsToExport.forEach((colName, cIdx) => {
+                let val = row[colName];
+                if (typeof val === 'number') {
+                    r[cIdx] = val;
+                } else if (val instanceof Date) {
+                    r[cIdx] = val.toLocaleDateString();
+                } else {
+                    r[cIdx] = val !== undefined && val !== null ? String(val).trim() : '';
+                }
+            });
+            dataAoa.push(r);
+        });
+
+        const wsData = XLSX.utils.aoa_to_sheet(dataAoa);
+
+        wsData[XLSX.utils.encode_cell({r: 1, c: 22})] = { t: 's', v: 'CLOSING' };
+        wsData[XLSX.utils.encode_cell({r: 3, c: 21})] = {
+            t: 'n', v: state.niftyPrice, f: `IF(Y5=50,W3,W3)`
+        };
+        wsData[XLSX.utils.encode_cell({r: 4, c: 24})] = { t: 'n', v: state.gap };
+
+        wsData['!ref'] = XLSX.utils.encode_range({
+            s: { r: 0, c: 0 },
+            e: { r: Math.max(state.filteredData.length + 3, 5), c: Math.max(colsToExport.length - 1, 25) }
+        });
+
+        XLSX.utils.book_append_sheet(wb, wsData, 'DATA');
+        XLSX.utils.book_append_sheet(wb, wsSheet2, 'Sheet2');
+
+        const wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbOut], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        const dateTag = new Date().toISOString().slice(0, 10);
+        downloadLink.download = `Formatted_Options_Sheet2_${dateTag}.xlsx`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(downloadLink.href);
+    }
+
+    function downloadFilteredRawCSV() {
+        if (!state.filteredData || state.filteredData.length === 0) {
+            alert('No filtered records available to export.');
+            return;
+        }
+        const colsToExport = (state.selectedColumns && state.selectedColumns.length > 0)
+            ? state.selectedColumns
+            : state.headers;
+
+        const rows = state.filteredData.map(r => {
+            const obj = {};
+            colsToExport.forEach(c => obj[c] = r[c]);
+            return obj;
+        });
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const csv = XLSX.utils.sheet_to_csv(ws);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        const dateTag = new Date().toISOString().slice(0, 10);
+        link.download = `Filtered_Options_Raw_${dateTag}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+
+    // ===== UTILITY HELPERS =====
+    function findHeader(target) {
+        const norm = target.toUpperCase().replace(/[\s_]+/g, '');
+        let found = state.headers.find(h => h.trim().toUpperCase().replace(/[\s_]+/g, '') === norm);
+        if (found) return found;
+
+        const aliases = {
+            'OPEN': ['OPENPRICE', 'OPEN_PRICE', 'OPEN'],
+            'HIGH': ['HIPRICE', 'HI_PRICE', 'HIGHPRICE', 'HIGH_PRICE', 'HIGH'],
+            'LOW': ['LOPRICE', 'LO_PRICE', 'LOWPRICE', 'LOW_PRICE', 'LOW'],
+            'CLOSE': ['CLOSEPRICE', 'CLOSE_PRICE', 'SETTLEPRICE', 'SETTLE_PRICE', 'CLOSE'],
+            'STRPRICE': ['STRIKEPRICE', 'STRIKE_PRICE', 'STRIKE', 'STR_PRICE'],
+            'OPTTYPE': ['OPTIONTYPE', 'OPTION_TYPE', 'OPTTYPE', 'OPT_TYPE'],
+            'IDENTIFIER': ['IDENTIFIER', 'ID', 'SYMBOL_STRIKE', 'OPTION_ID']
+        };
+
+        if (aliases[norm]) {
+            found = state.headers.find(h => {
+                const hn = h.trim().toUpperCase().replace(/[\s_]+/g, '');
+                return aliases[norm].some(a => a.replace(/_/g, '') === hn);
+            });
+            if (found) return found;
+        }
+        return null;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function resetApp() {
+        state.workbook = null;
+        state.sheetNames = [];
+        state.selectedSheet = null;
+        state.rawData = [];
+        state.headers = [];
+        state.selectedColumns = [];
+        state.columnTypes = {};
+        state.columnStats = {};
+        state.filters = {};
+        state.filteredData = [];
+        state.outputStrikes = [];
+        state.outputLookup = {};
+        state.sheet2StrikeMode = 'filteredOnly';
+
+        document.getElementById('fileInfo').classList.add('hidden');
+        document.getElementById('sheetSelector').classList.add('hidden');
+        uploadArea.classList.remove('hidden');
+        fileInput.value = '';
+        goToStep(1);
+    }
+    </script>
+</body>
+</html>
