@@ -1266,6 +1266,10 @@
                 <button class="btn-modern btn-modern-outline" style="padding: 7px 18px; font-size: 12.5px;" onclick="resetAllFilters()">Reset All Filters</button>
             </div>
 
+            <div id="noFiltersNotice" class="glass-alert hidden" style="text-align: center; justify-content: center; margin: 12px 0;">
+                <span>⚠️ All columns are deselected above. Select at least one column above to configure filters.</span>
+            </div>
+
             <div id="filtersContainer"></div>
 
             <div class="actions-flex">
@@ -1763,17 +1767,54 @@
         });
     }
 
+    function syncFilterVisibilityForCol(col, isSelected) {
+        const safeId = col.replace(/[^a-zA-Z0-9_]/g, '_');
+        const filterGroup = document.getElementById(`group_${safeId}`);
+        if (filterGroup) {
+            filterGroup.style.display = isSelected ? '' : 'none';
+            if (!isSelected) {
+                // Deactivate filter controls and clear criteria when column is deselected
+                const toggle = document.getElementById(`toggle_${safeId}`);
+                const controls = document.getElementById(`controls_${safeId}`);
+                const badge = document.getElementById(`badge_${safeId}`);
+                if (toggle) toggle.classList.remove('active');
+                if (controls) controls.classList.remove('visible');
+                if (badge) {
+                    badge.className = 'status-chip off';
+                    badge.textContent = 'Filter OFF';
+                }
+                filterGroup.classList.remove('is-active');
+                if (state.filters) {
+                    delete state.filters[col];
+                }
+            }
+        }
+    }
+
+    function checkEmptyFiltersNotice() {
+        const notice = document.getElementById('noFiltersNotice');
+        if (!notice) return;
+        if (!state.selectedColumns || state.selectedColumns.length === 0) {
+            notice.classList.remove('hidden');
+        } else {
+            notice.classList.add('hidden');
+        }
+    }
+
     function onColCheckboxChange(cb, col) {
         const safeId = col.replace(/[^a-zA-Z0-9_]/g, '_');
         const card = document.getElementById(`colcard_${safeId}`);
         if (cb.checked) {
             if (!state.selectedColumns.includes(col)) state.selectedColumns.push(col);
             if (card) card.classList.remove('is-deselected');
+            syncFilterVisibilityForCol(col, true);
         } else {
             state.selectedColumns = state.selectedColumns.filter(c => c !== col);
             if (card) card.classList.add('is-deselected');
+            syncFilterVisibilityForCol(col, false);
         }
         updateSelectedColumnsBadge();
+        checkEmptyFiltersNotice();
     }
 
     function updateSelectedColumnsBadge() {
@@ -1781,6 +1822,15 @@
         if (badge) {
             badge.textContent = `${state.selectedColumns.length} / ${state.headers.length} Selected`;
             badge.className = state.selectedColumns.length > 0 ? 'status-chip active' : 'status-chip off';
+        }
+        const applyBtn = document.getElementById('applyFiltersBtn');
+        if (applyBtn) {
+            const hasMissing = !document.getElementById('requiredColumnsAlert')?.classList.contains('hidden');
+            if (state.selectedColumns.length === 0) {
+                applyBtn.disabled = true;
+            } else if (!hasMissing) {
+                applyBtn.disabled = false;
+            }
         }
     }
 
@@ -1796,8 +1846,10 @@
             const safeId = col.replace(/[^a-zA-Z0-9_]/g, '_');
             const card = document.getElementById(`colcard_${safeId}`);
             if (card) card.classList.toggle('is-deselected', !selectAll);
+            syncFilterVisibilityForCol(col, selectAll);
         });
         updateSelectedColumnsBadge();
+        checkEmptyFiltersNotice();
     }
 
     function selectCoreColumnsOnly() {
@@ -1811,8 +1863,10 @@
             if (isCore) state.selectedColumns.push(col);
             const card = document.getElementById(`colcard_${safeId}`);
             if (card) card.classList.toggle('is-deselected', !isCore);
+            syncFilterVisibilityForCol(col, isCore);
         });
         updateSelectedColumnsBadge();
+        checkEmptyFiltersNotice();
     }
 
     // ===== FILTERS BUILDER UI =====
@@ -1825,10 +1879,14 @@
             const type = state.columnTypes[col];
             const stats = state.columnStats[col];
             const safeColId = col.replace(/[^a-zA-Z0-9_]/g, '_');
+            const isSelected = state.selectedColumns && state.selectedColumns.includes(col);
 
             const group = document.createElement('div');
             group.className = 'filter-panel';
             group.id = `group_${safeColId}`;
+            if (!isSelected) {
+                group.style.display = 'none';
+            }
 
             group.innerHTML = `
                 <div class="filter-head-flex">
@@ -1863,6 +1921,7 @@
                 }
             });
         });
+        checkEmptyFiltersNotice();
     }
 
     function getNearestStrikesHelper(strikesList, mid, count) {
@@ -2229,6 +2288,10 @@
 
         document.querySelectorAll('.ios-toggle.active').forEach(toggle => {
             const col = toggle.dataset.col;
+            // Ignore filter if the column is currently deselected from output
+            if (!state.selectedColumns || !state.selectedColumns.includes(col)) {
+                return;
+            }
             const type = state.columnTypes[col];
             const safeId = col.replace(/[^a-zA-Z0-9_]/g, '_');
             const filterObj = { type };
@@ -2325,6 +2388,7 @@
         // Filter data rows
         state.filteredData = state.rawData.filter(row => {
             for (const [col, f] of Object.entries(state.filters)) {
+                if (!state.selectedColumns || !state.selectedColumns.includes(col)) continue;
                 const rawVal = row[col];
                 if (f.type === 'date') {
                     const rawStr = String(rawVal || '').trim().replace(/^["']|["']$/g, '');
